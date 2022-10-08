@@ -2,13 +2,16 @@ package main
 
 import (
 	"encoding/csv"
+	"log"
 	"os"
+	"time"
 
+	"git.ngx.fi/c0mm4nd/tronetl/tron"
 	"github.com/jszwec/csvutil"
 )
 
-func exportTransfers(providerURL string, start uint64, end uint64, output string) {
-	cli := NewTronHTTPClient(providerURL)
+func exportTransfers(providerURI string, start uint64, end uint64, output string) {
+	cli := tron.NewTronClient(providerURI)
 
 	outFile, err := os.Create(output)
 	chk(err)
@@ -17,7 +20,17 @@ func exportTransfers(providerURL string, start uint64, end uint64, output string
 	defer w.Flush()
 	enc := csvutil.NewEncoder(w)
 
+	loc, _ := time.LoadLocation("Asia/Shanghai")
+
 	for number := start; number <= end; number++ {
+		// temp block time filter
+		block := cli.GetBlockByNumber(number)
+		blockTime := time.Unix(int64(block.Timestamp), 0)
+		y, m, d := blockTime.In(loc).Date()
+		if !(y == 2022 && m == 06 && (d == 6 || d == 5)) {
+			continue
+		}
+
 		txInfos := cli.GetTxInfosByNumber(number)
 		for _, txInfo := range txInfos {
 			txHash := txInfo.ID
@@ -27,8 +40,9 @@ func exportTransfers(providerURL string, start uint64, end uint64, output string
 					err := enc.Encode(tf)
 					chk(err)
 				}
-
 			}
 		}
+
+		log.Printf("parsed block %d", number)
 	}
 }

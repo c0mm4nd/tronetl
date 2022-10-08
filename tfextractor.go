@@ -8,7 +8,7 @@ import (
 	"github.com/btcsuite/btcd/btcutil/base58"
 )
 
-const TRANSFER_EVENT_TOPIC = "ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+const TRANSFER_EVENT_TOPIC = "ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef" // NO 0x Prefix for ANY topic!!!
 
 type Transfer struct {
 	BlockNumber uint64 `json:"blockNumber" csv:"block_number"`

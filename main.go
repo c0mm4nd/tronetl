@@ -10,12 +10,14 @@ import (
 
 func main() {
 	defaults := pflag.NewFlagSet("defaults for all commands", pflag.ExitOnError)
-	providerURL := defaults.String("provider-uri", "http://localhost:8090", "visible for all commands")
+	providerURL := defaults.String("provider-uri", "http://localhost", "visible for all commands")
 	startBlock := defaults.Uint64("start-block", 0, "only visible for cmd A")
 	endBlock := defaults.Uint64("end-block", 0, "only visible for cmd A")
 
-	// cmdBlocksAndTxs := pflag.NewFlagSet("export_blocks_and_transactions", pflag.ExitOnError)
-	// cmdBlocksAndTxs.AddFlagSet(defaults)
+	cmdBlocksAndTxs := pflag.NewFlagSet("export_blocks_and_transactions", pflag.ExitOnError)
+	blksOutput := cmdBlocksAndTxs.String("blocks-output", "blocks.csv", "blocks output")
+	txsOutput := cmdBlocksAndTxs.String("transactions-output", "transactions.csv", "transactions output")
+	cmdBlocksAndTxs.AddFlagSet(defaults)
 
 	cmdTokenTf := pflag.NewFlagSet("export_token_transfers", pflag.ExitOnError)
 	tfOutput := cmdTokenTf.String("output", "token_transfer.csv", "transfer output")
@@ -27,10 +29,9 @@ func main() {
 	}
 
 	switch os.Args[1] {
-	// case "export_blocks_and_transactions":
-	// 	cmdBlocksAndTxs.Parse(os.Args[2:])
-	// 	fmt.Println(*cmdAspecific)
-	// 	fmt.Println(*forAll)
+	case "export_blocks_and_transactions":
+		cmdBlocksAndTxs.Parse(os.Args[2:])
+		exportBlocksAndTransactions(*providerURL, *startBlock, *endBlock, *blksOutput, *txsOutput)
 	case "export_token_transfers":
 		cmdTokenTf.Parse(os.Args[2:])
 		exportTransfers(*providerURL, *startBlock, *endBlock, *tfOutput)
