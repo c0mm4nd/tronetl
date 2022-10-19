@@ -62,8 +62,11 @@ func (c *TronClient) GetBlockByNumber(number uint64) *Block {
 	body, err := io.ReadAll(resp.Body)
 	chk(err)
 
+	var rpcResp JSONResponse
 	var block Block
-	err = json.Unmarshal(body, &block)
+	err = json.Unmarshal(body, &rpcResp)
+	chk(err)
+	err = json.Unmarshal(rpcResp.Result, &block)
 	chk(err)
 
 	return &block

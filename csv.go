@@ -28,7 +28,7 @@ func NewCsvTransaction(blockTimestamp uint64, txIndex int, tx *tron.Transaction)
 		Hash:                 tx.Hash[2:],
 		Nonce:                "", //tx.Nonce,
 		BlockHash:            tx.BlockHash[2:],
-		BlockNumber:          uint64(tx.BlockNumber),
+		BlockNumber:          uint64(*tx.BlockNumber),
 		TransactionIndex:     txIndex,
 		FromAddress:          hex2TAddr(tx.From[2:]),
 		ToAddress:            hex2TAddr(tx.To[2:]),
@@ -69,7 +69,7 @@ type CsvBlock struct {
 
 func NewCsvBlock(block tron.Block) *CsvBlock {
 	return &CsvBlock{
-		Number:           uint64(block.Number),
+		Number:           uint64(*block.Number),
 		Hash:             block.Hash[2:],
 		ParentHash:       block.ParentHash[2:],
 		Nonce:            "",
@@ -81,11 +81,11 @@ func NewCsvBlock(block tron.Block) *CsvBlock {
 		Miner:            hex2TAddr(block.Miner[2:]),
 		Difficulty:       "",
 		TotalDifficulty:  "",
-		Size:             uint64(block.Size),
+		Size:             uint64(*block.Size),
 		ExtraData:        "",
 		GasLimit:         block.GasLimit.String(),
 		GasUsed:          block.GasUsed.String(),
-		Timestamp:        uint64(block.Timestamp),
+		Timestamp:        uint64(*block.Timestamp),
 		TansactionCount:  len(block.Transactions),
 		BaseFeePerGas:    "", // block.BaseFeePerGas,
 	}
