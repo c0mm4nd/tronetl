@@ -20,28 +20,44 @@ type CsvTransaction struct {
 	TransactionType      string `csv:"transaction_type"`
 
 	Status string
+
+	// appendix
+	TransactionTimestamp  uint64 `csv:"transaction_timestamp"`
+	TransactionExpiration uint64 `csv:"transaction_expiration"`
+	FeeLimit              uint64 `csv:"fee_limit"`
+	ContractCalls         int    `csv:"contract_calls"`
 }
 
-func NewCsvTransaction(blockTimestamp uint64, txIndex int, tx *tron.Transaction) *CsvTransaction {
+func NewCsvTransaction(blockTimestamp uint64, txIndex int, jsontx *tron.JSONTransaction, httptx *tron.HTTPTransaction) *CsvTransaction {
+	to := ""
+	if jsontx.To != "" {
+		to = hex2TAddr(jsontx.To[2:])
+	}
 
 	return &CsvTransaction{
-		Hash:                 tx.Hash[2:],
+		Hash:                 jsontx.Hash[2:],
 		Nonce:                "", //tx.Nonce,
-		BlockHash:            tx.BlockHash[2:],
-		BlockNumber:          uint64(*tx.BlockNumber),
+		BlockHash:            jsontx.BlockHash[2:],
+		BlockNumber:          uint64(*jsontx.BlockNumber),
 		TransactionIndex:     txIndex,
-		FromAddress:          hex2TAddr(tx.From[2:]),
-		ToAddress:            hex2TAddr(tx.To[2:]),
-		Value:                tx.Value.String(),
-		Gas:                  tx.Gas.String(),
-		GasPrice:             tx.GasPrice.String(),
-		Input:                tx.Input[2:],
+		FromAddress:          hex2TAddr(jsontx.From[2:]),
+		ToAddress:            to,
+		Value:                jsontx.Value.String(),
+		Gas:                  jsontx.Gas.String(),
+		GasPrice:             jsontx.GasPrice.String(), // https://support.ledger.com/hc/en-us/articles/6331588714141-How-do-Tron-TRX-fees-work-?support=true
+		Input:                jsontx.Input[2:],
 		BlockTimestamp:       blockTimestamp,
 		MaxFeePerGas:         "", //tx.MaxFeePerGas.String(),
 		MaxPriorityFeePerGas: "", //tx.MaxPriorityFeePerGas.String(),
-		TransactionType:      tx.Type[2:],
+		TransactionType:      jsontx.Type[2:],
 
-		// Status: tx.,
+		Status: httptx.Ret[0].ContractRet,
+
+		// appendix
+		TransactionTimestamp:  httptx.RawData.Timestamp,
+		TransactionExpiration: httptx.RawData.Expiration,
+		FeeLimit:              httptx.RawData.FeeLimit,
+		ContractCalls:         len(httptx.RawData.Contract),
 	}
 }
 
@@ -65,28 +81,34 @@ type CsvBlock struct {
 	Timestamp        uint64 `csv:"timestamp"`
 	TansactionCount  int    `csv:"transaction_count"`
 	BaseFeePerGas    string `csv:"base_fee_per_gas"`
+
+	// append
+	WitnessSignature string `csv:"witness_signature"`
 }
 
-func NewCsvBlock(block tron.Block) *CsvBlock {
+func NewCsvBlock(jsonblock *tron.JSONBlock, httpblock *tron.HTTPBlock) *CsvBlock {
 	return &CsvBlock{
-		Number:           uint64(*block.Number),
-		Hash:             block.Hash[2:],
-		ParentHash:       block.ParentHash[2:],
+		Number:           uint64(*jsonblock.Number),
+		Hash:             jsonblock.Hash[2:],
+		ParentHash:       jsonblock.ParentHash[2:],
 		Nonce:            "",
 		Sha3Uncles:       "", // block.Sha3Uncles,
-		LogsBloom:        block.LogsBloom[2:],
-		TransactionsRoot: block.TransactionsRoot[2:],
-		StateRoot:        block.StateRoot[2:],
-		ReceiptsRoot:     "", // block.ReceiptsRoot
-		Miner:            hex2TAddr(block.Miner[2:]),
+		LogsBloom:        jsonblock.LogsBloom[2:],
+		TransactionsRoot: jsonblock.TransactionsRoot[2:],
+		StateRoot:        jsonblock.StateRoot[2:],
+		ReceiptsRoot:     "",                             // block.ReceiptsRoot
+		Miner:            hex2TAddr(jsonblock.Miner[2:]), // = WitnessAddress
 		Difficulty:       "",
 		TotalDifficulty:  "",
-		Size:             uint64(*block.Size),
+		Size:             uint64(*jsonblock.Size),
 		ExtraData:        "",
-		GasLimit:         block.GasLimit.String(),
-		GasUsed:          block.GasUsed.String(),
-		Timestamp:        uint64(*block.Timestamp),
-		TansactionCount:  len(block.Transactions),
+		GasLimit:         jsonblock.GasLimit.ToInt().String(),
+		GasUsed:          jsonblock.GasUsed.ToInt().String(),
+		Timestamp:        uint64(*jsonblock.Timestamp),
+		TansactionCount:  len(jsonblock.Transactions),
 		BaseFeePerGas:    "", // block.BaseFeePerGas,
+
+		//append
+		WitnessSignature: httpblock.BlockHeader.WitnessSignature,
 	}
 }

@@ -12,31 +12,31 @@ type JSONResponse struct {
 	Result  json.RawMessage `json:"result"`
 }
 
-type Block struct {
-	BaseFeePerGas    interface{}     `json:"baseFeePerGas"`
-	Difficulty       interface{}     `json:"difficulty"`
-	ExtraData        interface{}     `json:"extraData"`
-	GasLimit         *hexutil.Big    `json:"gasLimit"`
-	GasUsed          *hexutil.Big    `json:"gasUsed"`
-	Hash             string          `json:"hash"`
-	LogsBloom        string          `json:"logsBloom"`
-	Miner            string          `json:"miner"`
-	MixHash          interface{}     `json:"mixHash"`
-	Nonce            interface{}     `json:"nonce"` // null
-	Number           *hexutil.Uint64 `json:"number"`
-	ParentHash       string          `json:"parentHash"`
-	ReceiptsRoot     interface{}     `json:"receiptsRoot"`
-	Sha3Uncles       interface{}     `json:"sha3Uncles"`
-	Size             *hexutil.Uint64 `json:"size"`
-	StateRoot        string          `json:"stateRoot"`
-	Timestamp        *hexutil.Uint64 `json:"timestamp"`
-	TotalDifficulty  interface{}     `json:"totalDifficulty"`
-	Transactions     []Transaction   `json:"transactions"`
-	TransactionsRoot string          `json:"transactionsRoot"`
-	Uncles           []string        `json:"uncles"`
+type JSONBlock struct {
+	BaseFeePerGas    interface{}       `json:"baseFeePerGas"`
+	Difficulty       interface{}       `json:"difficulty"`
+	ExtraData        interface{}       `json:"extraData"`
+	GasLimit         *hexutil.Big      `json:"gasLimit"`
+	GasUsed          *hexutil.Big      `json:"gasUsed"`
+	Hash             string            `json:"hash"`
+	LogsBloom        string            `json:"logsBloom"`
+	Miner            string            `json:"miner"`
+	MixHash          interface{}       `json:"mixHash"`
+	Nonce            interface{}       `json:"nonce"` // null
+	Number           *hexutil.Uint64   `json:"number"`
+	ParentHash       string            `json:"parentHash"`
+	ReceiptsRoot     interface{}       `json:"receiptsRoot"`
+	Sha3Uncles       interface{}       `json:"sha3Uncles"`
+	Size             *hexutil.Uint64   `json:"size"`
+	StateRoot        string            `json:"stateRoot"`
+	Timestamp        *hexutil.Uint64   `json:"timestamp"`
+	TotalDifficulty  interface{}       `json:"totalDifficulty"`
+	Transactions     []JSONTransaction `json:"transactions"`
+	TransactionsRoot string            `json:"transactionsRoot"`
+	Uncles           []string          `json:"uncles"`
 }
 
-type Transaction struct {
+type JSONTransaction struct {
 	BlockHash        string          `json:"blockHash"`
 	BlockNumber      *hexutil.Uint64 `json:"blockNumber"`
 	From             string          `json:"from"`

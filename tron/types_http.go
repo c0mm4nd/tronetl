@@ -27,3 +27,53 @@ type TxInfo struct {
 		Hash string `json:"hash"`
 	} `json:"internal_transactions,omitempty"`
 }
+
+type HTTPBlock struct {
+	BlockID     string `json:"blockID"`
+	BlockHeader struct {
+		RawData struct {
+			Number         int    `json:"number"`
+			TxTrieRoot     string `json:"txTrieRoot"`
+			WitnessAddress string `json:"witness_address"`
+			ParentHash     string `json:"parentHash"`
+			Version        int    `json:"version"`
+			Timestamp      int64  `json:"timestamp"`
+		} `json:"raw_data"`
+		WitnessSignature string `json:"witness_signature"`
+	} `json:"block_header"`
+	Transactions []HTTPTransaction `json:"transactions"`
+}
+
+// Values: https://tronprotocol.github.io/documentation-en/mechanism-algorithm/system-contracts/
+//TransferAssetContract
+//TriggerSmartContract
+//TransferContract
+
+type HTTPTransaction struct {
+	Ret []struct {
+		ContractRet string `json:"contractRet"`
+	} `json:"ret"`
+	Signature []string `json:"signature"`
+	TxID      string   `json:"txID"`
+	RawData   struct {
+		Data     string `json:"data"`
+		Contract []struct {
+			Parameter struct {
+				Value struct {
+					AssetName    string `json:"asset_name"`
+					Amount       uint64 `json:"amount"`
+					OwnerAddress string `json:"owner_address"`
+					ToAddress    string `json:"to_address"`
+				} `json:"value"`
+				TypeURL string `json:"type_url"`
+			} `json:"parameter"`
+			Type string `json:"type"`
+		} `json:"contract"`
+		RefBlockBytes string `json:"ref_block_bytes"`
+		RefBlockHash  string `json:"ref_block_hash"`
+		Expiration    uint64 `json:"expiration"`
+		Timestamp     uint64 `json:"timestamp"`
+		FeeLimit      uint64 `json:"fee_limit"`
+	} `json:"raw_data"`
+	RawDataHex string `json:"raw_data_hex"`
+}

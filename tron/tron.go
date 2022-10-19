@@ -47,12 +47,12 @@ func (c *TronClient) GetTxInfosByNumber(number uint64) []TxInfo {
 	return txInfos
 }
 
-func (c *TronClient) GetBlockByNumber(number uint64) *Block {
+func (c *TronClient) GetJSONBlockByNumber(number *big.Int) *JSONBlock {
 	payload, err := json.Marshal(map[string]any{
 		"jsonrpc": "2.0",
 		"method":  "eth_getBlockByNumber",
 		"params": []any{
-			toBlockNumArg(new(big.Int).SetUint64(number)), true,
+			toBlockNumArg(number), true,
 		},
 		"id": rand.Int(),
 	})
@@ -63,10 +63,28 @@ func (c *TronClient) GetBlockByNumber(number uint64) *Block {
 	chk(err)
 
 	var rpcResp JSONResponse
-	var block Block
+	var block JSONBlock
 	err = json.Unmarshal(body, &rpcResp)
 	chk(err)
 	err = json.Unmarshal(rpcResp.Result, &block)
+	chk(err)
+
+	return &block
+}
+
+func (c *TronClient) GetHTTPBlockByNumber(number *big.Int) *HTTPBlock {
+	url := c.httpURI + "/wallet/getblockbynum"
+	payload, err := json.Marshal(map[string]any{
+		"num": number.Uint64(),
+	})
+	chk(err)
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(payload))
+	chk(err)
+	body, err := io.ReadAll(resp.Body)
+	chk(err)
+
+	var block HTTPBlock
+	err = json.Unmarshal(body, &block)
 	chk(err)
 
 	return &block
