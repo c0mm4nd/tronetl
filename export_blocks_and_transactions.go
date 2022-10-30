@@ -2,35 +2,41 @@ package main
 
 import (
 	"encoding/csv"
+	"io"
 	"log"
 	"math/big"
-	"os"
 
 	"git.ngx.fi/c0mm4nd/tronetl/tron"
 	"github.com/jszwec/csvutil"
 )
 
 type ExportBlocksAndTransactionsOptions struct {
+	// outputType string // failed to output to a conn with
+	blksOutput io.Writer
+	txsOutput  io.Writer
+	// withBlockOutput io.Writer
+
+	ProviderURI string `json:"provider_uri,omitempty"`
+	StartBlock  uint64 `json:"start_block,omitempty"`
+	EndBlock    uint64 `json:"end_block,omitempty"`
+
+	// extension
+	StartTimestamp uint64 `json:"start_timestamp,omitempty"`
+	EndTimestamp   uint64 `json:"end_timestamp,omitempty"`
 }
 
-func exportBlocksAndTransactions(providerURL string, start uint64, end uint64, blksOutput, txsOutput string) {
-	cli := tron.NewTronClient(providerURL)
+func exportBlocksAndTransactions(options *ExportBlocksAndTransactionsOptions) {
+	cli := tron.NewTronClient(options.ProviderURI)
 
-	blksOutFile, err := os.Create(blksOutput)
-	chk(err)
-
-	blksCsvWriter := csv.NewWriter(blksOutFile)
+	blksCsvWriter := csv.NewWriter(options.blksOutput)
 	defer blksCsvWriter.Flush()
 	blksCsvEncoder := csvutil.NewEncoder(blksCsvWriter)
 
-	txsOutFile, err := os.Create(txsOutput)
-	chk(err)
-
-	txsCsvWriter := csv.NewWriter(txsOutFile)
+	txsCsvWriter := csv.NewWriter(options.txsOutput)
 	defer txsCsvWriter.Flush()
 	txsCsvEncoder := csvutil.NewEncoder(txsCsvWriter)
 
-	for number := start; number <= end; number++ {
+	for number := options.StartBlock; number <= options.EndBlock; number++ {
 		num := new(big.Int).SetUint64(number)
 		jsonblock := cli.GetJSONBlockByNumber(num)
 		httpblock := cli.GetHTTPBlockByNumber(num)

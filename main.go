@@ -40,7 +40,23 @@ func main() {
 	switch os.Args[1] {
 	case "export_blocks_and_transactions":
 		cmdBlocksAndTxs.Parse(os.Args[2:])
-		exportBlocksAndTransactions(*providerURI, *startBlock, *endBlock, *blksOutput, *txsOutput)
+
+		blksOut, err := os.Create(*blksOutput)
+		chk(err)
+
+		txsOut, err := os.Create(*txsOutput)
+		chk(err)
+
+		exportBlocksAndTransactions(&ExportBlocksAndTransactionsOptions{
+			blksOutput: blksOut,
+			txsOutput:  txsOut,
+			
+			StartBlock: *startBlock,
+			EndBlock:   *endBlock,
+
+			StartTimestamp: *startTimestamp,
+			EndTimestamp:   *endTimestamp,
+		})
 	case "export_token_transfers":
 		cmdTokenTf.Parse(os.Args[2:])
 
