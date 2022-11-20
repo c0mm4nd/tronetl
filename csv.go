@@ -122,16 +122,16 @@ func NewCsvBlock(jsonblock *tron.JSONBlock, httpblock *tron.HTTPBlock) *CsvBlock
 // TransferContract
 // TransferAssetContract
 type CsvTRC10Transfer struct {
-	TransactionHash   string `csv:"hash"`
-	BlockHash         string `csv:"block_hash"`
 	BlockNumber       uint64 `csv:"block_number"`
+	BlockHash         string `csv:"block_hash"`
+	TransactionHash   string `csv:"transaction_hash"`
 	TransactionIndex  int    `csv:"transaction_index"`
-	ContractCallIndex int    `csv:"call_index"`
+	ContractCallIndex int    `csv:"contract_call_index"`
 
 	AssetName   string `csv:"asset_name"` // do not omit => empty means trx
 	FromAddress string `csv:"from_address,omitempty"`
 	ToAddress   string `csv:"to_address,omitempty"`
-	Value       string `csv:"value.omitempty"`
+	Value       string `csv:"value,omitempty"`
 }
 
 func NewCsvTRC10Transfer(blockNum uint64, txIndex, callIndex int, httpTx *tron.HTTPTransaction, tfParams *tron.TRC10TransferParams) *CsvTRC10Transfer {

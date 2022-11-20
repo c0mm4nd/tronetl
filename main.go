@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -9,8 +10,15 @@ import (
 
 	"git.ngx.fi/c0mm4nd/tronetl/tron"
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
+
+var rootCmd = &cobra.Command{
+	Use:   "tronetl",
+	Short: "tronetl",
+	Long:  `tronetl is a CLI tool for parsing blockchain data from tron network`,
+}
 
 func main() {
 	defaults := pflag.NewFlagSet("defaults for all commands", pflag.ExitOnError)
@@ -23,120 +31,136 @@ func main() {
 	cmdBlocksAndTxs := pflag.NewFlagSet("export_blocks", pflag.ExitOnError)
 	blksOutput := cmdBlocksAndTxs.String("blocks-output", "blocks.csv", "blocks output")
 	txsOutput := cmdBlocksAndTxs.String("transactions-output", "transactions.csv", "transactions output")
+	trc10Output := cmdBlocksAndTxs.String("trc10-output", "trc10.csv", "trc10 output")
 	cmdBlocksAndTxs.AddFlagSet(defaults)
 
 	cmdTokenTf := pflag.NewFlagSet("export_token_transfers", pflag.ExitOnError)
 	tfOutput := cmdTokenTf.String("output", "token_transfer.csv", "transfer output")
 	filterContracts := cmdTokenTf.StringArray("contracts", []string{}, "limit contracts")
-	// withBlockOutput := cmdTokenTf.String("output", "blocks.csv", "with blocks output")
-	// withTransactionOutput := cmdTokenTf.String("output", "txs.csv", "with transfer output")
 	cmdTokenTf.AddFlagSet(defaults)
-	// defaults.Parse(os.Args)
 
-	if len(os.Args) == 1 {
-		log.Fatal("no subcommand given")
+	exportBlocksCmd := &cobra.Command{
+		Use: "export_blocks",
+		Run: func(cmd *cobra.Command, args []string) {
+			var err error
+			var blksOut, txsOut, trc10Out *os.File
+			if *blksOutput != "-" {
+				blksOut, err = os.Create(*blksOutput)
+				chk(err)
+			}
+
+			if *txsOutput != "-" {
+				txsOut, err = os.Create(*txsOutput)
+				chk(err)
+			}
+
+			if *trc10Output != "-" {
+				trc10Out, err = os.Create(*trc10Output)
+				chk(err)
+			}
+
+			exportBlocksAndTransactions(&ExportBlocksOptions{
+				blksOutput:  blksOut,
+				txsOutput:   txsOut,
+				trc10Output: trc10Out,
+
+				ProviderURI: *providerURI,
+
+				StartBlock: *startBlock,
+				EndBlock:   *endBlock,
+
+				StartTimestamp: *startTimestamp,
+				EndTimestamp:   *endTimestamp,
+
+				WithTRXTransactions: txsOut != nil,
+				WithTRC10Transfers:  trc10Out != nil,
+			})
+		},
+	}
+	exportBlocksCmd.Flags().AddFlagSet(cmdBlocksAndTxs)
+
+	exportTokenTransfersCmd := &cobra.Command{
+		Use: "export_token_transfers",
+		Run: func(cmd *cobra.Command, args []string) {
+			var err error
+			var tfOut *os.File
+			if *txsOutput != "-" {
+				tfOut, err = os.Create(*tfOutput)
+				chk(err)
+			}
+
+			exportTransfers(&ExportTransferOptions{
+				output: tfOut,
+				// withBlockOutput:       blockOutput,
+				// withTransactionOutput: transactionOutput,
+
+				ProviderURI: *providerURI,
+				StartBlock:  *startBlock,
+				EndBlock:    *endBlock,
+
+				StartTimestamp: *startTimestamp,
+				EndTimestamp:   *endTimestamp,
+				Contracts:      *filterContracts,
+			})
+		},
+	}
+	exportTokenTransfersCmd.Flags().AddFlagSet(cmdTokenTf)
+
+	serverCmd := &cobra.Command{
+		Use: "server",
+		Run: func(cmd *cobra.Command, args []string) {
+			cli := tron.NewTronClient("http://localhost")
+
+			latestBlock := cli.GetJSONBlockByNumber(nil, false)
+			log.Printf("latest block: %d", *latestBlock.Number)
+
+			tryStr2Uint := func(str string) uint64 {
+				u, err := strconv.ParseUint(str, 10, 64)
+				if err != nil {
+					return 0
+				}
+				return u
+			}
+
+			r := gin.Default()
+			r.GET("/export_token_transfers", func(ctx *gin.Context) {
+				// c, err := websocket.Accept(ctx.Writer, ctx.Request, &websocket.AcceptOptions{
+				// 	InsecureSkipVerify: true,
+				// 	OriginPatterns:     []string{"172.24.1.1:54173"},
+				// })
+				// chk(err)
+				// defer c.Close(websocket.StatusInternalError, "the sky is falling")
+
+				// writer, err := c.Writer(ctx, websocket.MessageText)
+				// chk(err)
+				writer := new(bytes.Buffer)
+				options := &ExportTransferOptions{
+					output:         writer,
+					ProviderURI:    "http://localhost",
+					StartBlock:     tryStr2Uint(ctx.Query("start-block")),
+					EndBlock:       tryStr2Uint(ctx.Query("end-block")),
+					StartTimestamp: tryStr2Uint(ctx.Query("start-timestamp")),
+					EndTimestamp:   tryStr2Uint(ctx.Query("end-timestamp")),
+					Contracts:      ctx.QueryArray("contracts"),
+				}
+				exportTransfers(options)
+
+				// writer.Close()
+				// c.Close(websocket.StatusNormalClosure, "")
+				ctx.Header("Content-Disposition", "attachment;filename=token_transfer.csv")
+				ctx.Data(http.StatusOK, "text/csv", writer.Bytes())
+			})
+			r.Run(":54173")
+
+		},
 	}
 
-	switch os.Args[1] {
-	case "export_blocks":
-		cmdBlocksAndTxs.Parse(os.Args[2:])
+	rootCmd.AddCommand(exportBlocksCmd)
+	rootCmd.AddCommand(exportTokenTransfersCmd)
+	rootCmd.AddCommand(serverCmd)
 
-		blksOut, err := os.Create(*blksOutput)
-		chk(err)
-
-		txsOut, err := os.Create(*txsOutput)
-		chk(err)
-
-		exportBlocksAndTransactions(&ExportBlocksOptions{
-			blksOutput: blksOut,
-			txsOutput:  txsOut,
-
-			StartBlock: *startBlock,
-			EndBlock:   *endBlock,
-
-			StartTimestamp: *startTimestamp,
-			EndTimestamp:   *endTimestamp,
-		})
-	case "export_token_transfers":
-		cmdTokenTf.Parse(os.Args[2:])
-
-		outFile, err := os.Create(*tfOutput)
-		chk(err)
-
-		// var blockOutput io.Writer
-		// if *withBlockOutput != "" {
-		// 	blockOutput, err = os.Create(*withBlockOutput)
-		// 	chk(err)
-		// }
-
-		// var transactionOutput io.Writer
-		// if *withTransactionOutput != "" {
-		// 	transactionOutput, err = os.Create(*transactionOutput)
-		// 	chk(err)
-		// }
-
-		// writer, err := rollingwriter.NewWriterFromConfig(&rollingwriter.Config{
-		// 	LogPath:  "/mnt/hdd14t/tron_out/",
-		// 	FileName: *tfOutput,
-		// 	RollingVolumeSize:      "2G",
-		// })
-
-		exportTransfers(&ExportTransferOptions{
-			output: outFile,
-			// withBlockOutput:       blockOutput,
-			// withTransactionOutput: transactionOutput,
-
-			ProviderURI: *providerURI,
-			StartBlock:  *startBlock,
-			EndBlock:    *endBlock,
-
-			StartTimestamp: *startTimestamp,
-			EndTimestamp:   *endTimestamp,
-			Contracts:      *filterContracts,
-		})
-	case "server":
-		// run server by default
-		cli := tron.NewTronClient("http://localhost")
-
-		latestBlock := cli.GetJSONBlockByNumber(nil, false)
-		log.Printf("latest block: %d", *latestBlock.Number)
-
-		tryStr2Uint := func(str string) uint64 {
-			u, err := strconv.ParseUint(str, 10, 64)
-			if err != nil {
-				return 0
-			}
-			return u
-		}
-
-		r := gin.Default()
-		r.GET("/export_token_transfers", func(ctx *gin.Context) {
-			// c, err := websocket.Accept(ctx.Writer, ctx.Request, &websocket.AcceptOptions{
-			// 	InsecureSkipVerify: true,
-			// 	OriginPatterns:     []string{"172.24.1.1:54173"},
-			// })
-			// chk(err)
-			// defer c.Close(websocket.StatusInternalError, "the sky is falling")
-
-			// writer, err := c.Writer(ctx, websocket.MessageText)
-			// chk(err)
-			writer := new(bytes.Buffer)
-			options := &ExportTransferOptions{
-				output:         writer,
-				ProviderURI:    "http://localhost",
-				StartBlock:     tryStr2Uint(ctx.Query("start-block")),
-				EndBlock:       tryStr2Uint(ctx.Query("end-block")),
-				StartTimestamp: tryStr2Uint(ctx.Query("start-timestamp")),
-				EndTimestamp:   tryStr2Uint(ctx.Query("end-timestamp")),
-				Contracts:      ctx.QueryArray("contracts"),
-			}
-			exportTransfers(options)
-
-			// writer.Close()
-			// c.Close(websocket.StatusNormalClosure, "")
-			ctx.Header("Content-Disposition", "attachment;filename=token_transfer.csv")
-			ctx.Data(http.StatusOK, "text/csv", writer.Bytes())
-		})
-		r.Run(":54173")
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
 	}
 }
