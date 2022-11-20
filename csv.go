@@ -2,12 +2,15 @@ package main
 
 import "git.ngx.fi/c0mm4nd/tronetl/tron"
 
+// CsvTransaction represents a tron tx, not trc10
+// 1 TRX = 1000000 sun
 type CsvTransaction struct {
-	Hash                 string `csv:"hash"`
-	Nonce                string `csv:"nonce"`
-	BlockHash            string `csv:"block_hash"`
-	BlockNumber          uint64 `csv:"block_number"`
-	TransactionIndex     int    `csv:"transaction_index"`
+	Hash             string `csv:"hash"`
+	Nonce            string `csv:"nonce"`
+	BlockHash        string `csv:"block_hash"`
+	BlockNumber      uint64 `csv:"block_number"`
+	TransactionIndex int    `csv:"transaction_index"`
+
 	FromAddress          string `csv:"from_address"`
 	ToAddress            string `csv:"to_address"`
 	Value                string `csv:"value"`
@@ -25,7 +28,7 @@ type CsvTransaction struct {
 	TransactionTimestamp  uint64 `csv:"transaction_timestamp"`
 	TransactionExpiration uint64 `csv:"transaction_expiration"`
 	FeeLimit              uint64 `csv:"fee_limit"`
-	ContractCalls         int    `csv:"contract_calls"`
+	ContractCallCount     int    `csv:"contract_calls"`
 }
 
 func NewCsvTransaction(blockTimestamp uint64, txIndex int, jsontx *tron.JSONTransaction, httptx *tron.HTTPTransaction) *CsvTransaction {
@@ -57,7 +60,7 @@ func NewCsvTransaction(blockTimestamp uint64, txIndex int, jsontx *tron.JSONTran
 		TransactionTimestamp:  httptx.RawData.Timestamp,
 		TransactionExpiration: httptx.RawData.Expiration,
 		FeeLimit:              httptx.RawData.FeeLimit,
-		ContractCalls:         len(httptx.RawData.Contract),
+		ContractCallCount:     len(httptx.RawData.Contract),
 	}
 }
 
@@ -110,5 +113,39 @@ func NewCsvBlock(jsonblock *tron.JSONBlock, httpblock *tron.HTTPBlock) *CsvBlock
 
 		//append
 		WitnessSignature: httpblock.BlockHeader.WitnessSignature,
+	}
+}
+
+// trc10
+// https://developers.tron.network/docs/trc10-transfer-in-smart-contracts
+// https://tronprotocol.github.io/documentation-en/mechanism-algorithm/system-contracts/
+// TransferContract
+// TransferAssetContract
+type CsvTRC10Transfer struct {
+	TransactionHash   string `csv:"hash"`
+	BlockHash         string `csv:"block_hash"`
+	BlockNumber       uint64 `csv:"block_number"`
+	TransactionIndex  int    `csv:"transaction_index"`
+	ContractCallIndex int    `csv:"call_index"`
+
+	AssetName   string `csv:"asset_name"` // do not omit => empty means trx
+	FromAddress string `csv:"from_address,omitempty"`
+	ToAddress   string `csv:"to_address,omitempty"`
+	Value       string `csv:"value.omitempty"`
+}
+
+func NewCsvTRC10Transfer(blockNum uint64, txIndex, callIndex int, httpTx *tron.HTTPTransaction, tfParams *tron.TRC10TransferParams) *CsvTRC10Transfer {
+
+	return &CsvTRC10Transfer{
+		TransactionHash:   httpTx.TxID,
+		BlockHash:         httpTx.RawData.RefBlockHash,
+		BlockNumber:       blockNum,
+		TransactionIndex:  txIndex,
+		ContractCallIndex: callIndex,
+
+		AssetName:   tfParams.AssetName,
+		FromAddress: tfParams.OwnerAddress,
+		ToAddress:   tfParams.ToAddress,
+		Value:       tfParams.Amount.String(),
 	}
 }

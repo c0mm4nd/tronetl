@@ -1,5 +1,10 @@
 package tron
 
+import (
+	"encoding/json"
+	"math/big"
+)
+
 type TxInfo struct {
 	Log []struct {
 		Address string   `json:"address"`
@@ -56,24 +61,28 @@ type HTTPTransaction struct {
 	Signature []string `json:"signature"`
 	TxID      string   `json:"txID"`
 	RawData   struct {
-		Data     string `json:"data"`
-		Contract []struct {
-			Parameter struct {
-				Value struct {
-					AssetName    string `json:"asset_name"`
-					Amount       uint64 `json:"amount"`
-					OwnerAddress string `json:"owner_address"`
-					ToAddress    string `json:"to_address"`
-				} `json:"value"`
-				TypeURL string `json:"type_url"`
-			} `json:"parameter"`
-			Type string `json:"type"`
-		} `json:"contract"`
-		RefBlockBytes string `json:"ref_block_bytes"`
-		RefBlockHash  string `json:"ref_block_hash"`
-		Expiration    uint64 `json:"expiration"`
-		Timestamp     uint64 `json:"timestamp"`
-		FeeLimit      uint64 `json:"fee_limit"`
+		Data          string          `json:"data"`
+		Contract      []*ContractCall `json:"contract"`
+		RefBlockBytes string          `json:"ref_block_bytes"`
+		RefBlockHash  string          `json:"ref_block_hash"`
+		Expiration    uint64          `json:"expiration"`
+		Timestamp     uint64          `json:"timestamp"`
+		FeeLimit      uint64          `json:"fee_limit"`
 	} `json:"raw_data"`
 	RawDataHex string `json:"raw_data_hex"`
+}
+
+type ContractCall struct {
+	Parameter struct {
+		Value   json.RawMessage `json:"value"`
+		TypeURL string          `json:"type_url"`
+	} `json:"parameter"`
+	Type string `json:"type"`
+}
+
+type TRC10TransferParams struct {
+	AssetName    string   `json:"asset_name"`
+	Amount       *big.Int `json:"amount"`
+	OwnerAddress string   `json:"owner_address"`
+	ToAddress    string   `json:"to_address"`
 }

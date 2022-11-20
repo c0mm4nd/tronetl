@@ -47,7 +47,7 @@ func exportTransfers(options *ExportTransferOptions) {
 		estimateStartNumber := locateStartBlock(cli, options.StartTimestamp)
 
 		for number := estimateStartNumber; ; number++ {
-			block := cli.GetJSONBlockByNumber(new(big.Int).SetUint64(number))
+			block := cli.GetJSONBlockByNumber(new(big.Int).SetUint64(number), false)
 			if block == nil {
 				break
 			}
@@ -68,7 +68,7 @@ func exportTransfers(options *ExportTransferOptions) {
 		estimateEndNumber := locateEndBlock(cli, options.EndTimestamp)
 
 		for number := estimateEndNumber; ; number-- {
-			block := cli.GetJSONBlockByNumber(new(big.Int).SetUint64(number))
+			block := cli.GetJSONBlockByNumber(new(big.Int).SetUint64(number), false)
 			if block == nil {
 				break
 			}

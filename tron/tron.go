@@ -47,12 +47,12 @@ func (c *TronClient) GetTxInfosByNumber(number uint64) []TxInfo {
 	return txInfos
 }
 
-func (c *TronClient) GetJSONBlockByNumber(number *big.Int) *JSONBlock {
+func (c *TronClient) GetJSONBlockByNumber(number *big.Int, requireDetail bool) *JSONBlock {
 	payload, err := json.Marshal(map[string]any{
 		"jsonrpc": "2.0",
 		"method":  "eth_getBlockByNumber",
 		"params": []any{
-			toBlockNumArg(number), true,
+			toBlockNumArg(number), requireDetail,
 		},
 		"id": rand.Int(),
 	})

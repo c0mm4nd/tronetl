@@ -20,7 +20,7 @@ func main() {
 	startTimestamp := defaults.Uint64("start-timestamp", 0, "only visible for cmd A")
 	endTimestamp := defaults.Uint64("end-timestamp", 0, "only visible for cmd A")
 
-	cmdBlocksAndTxs := pflag.NewFlagSet("export_blocks_and_transactions", pflag.ExitOnError)
+	cmdBlocksAndTxs := pflag.NewFlagSet("export_blocks", pflag.ExitOnError)
 	blksOutput := cmdBlocksAndTxs.String("blocks-output", "blocks.csv", "blocks output")
 	txsOutput := cmdBlocksAndTxs.String("transactions-output", "transactions.csv", "transactions output")
 	cmdBlocksAndTxs.AddFlagSet(defaults)
@@ -38,7 +38,7 @@ func main() {
 	}
 
 	switch os.Args[1] {
-	case "export_blocks_and_transactions":
+	case "export_blocks":
 		cmdBlocksAndTxs.Parse(os.Args[2:])
 
 		blksOut, err := os.Create(*blksOutput)
@@ -47,10 +47,10 @@ func main() {
 		txsOut, err := os.Create(*txsOutput)
 		chk(err)
 
-		exportBlocksAndTransactions(&ExportBlocksAndTransactionsOptions{
+		exportBlocksAndTransactions(&ExportBlocksOptions{
 			blksOutput: blksOut,
 			txsOutput:  txsOut,
-			
+
 			StartBlock: *startBlock,
 			EndBlock:   *endBlock,
 
@@ -98,7 +98,7 @@ func main() {
 		// run server by default
 		cli := tron.NewTronClient("http://localhost")
 
-		latestBlock := cli.GetJSONBlockByNumber(nil)
+		latestBlock := cli.GetJSONBlockByNumber(nil, false)
 		log.Printf("latest block: %d", *latestBlock.Number)
 
 		tryStr2Uint := func(str string) uint64 {
