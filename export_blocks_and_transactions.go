@@ -11,7 +11,7 @@ import (
 	"github.com/jszwec/csvutil"
 )
 
-type ExportBlocksOptions struct {
+type ExportBlocksAndTransactionsOptions struct {
 	// outputType string // failed to output to a conn with
 	blksOutput  io.Writer
 	txsOutput   io.Writer
@@ -30,7 +30,7 @@ type ExportBlocksOptions struct {
 	WithTRC10Transfers  bool
 }
 
-func exportBlocksAndTransactions(options *ExportBlocksOptions) {
+func exportBlocksAndTransactions(options *ExportBlocksAndTransactionsOptions) {
 	cli := tron.NewTronClient(options.ProviderURI)
 
 	blksCsvWriter := csv.NewWriter(options.blksOutput)

@@ -8,6 +8,8 @@ import (
 	"os"
 	"strconv"
 
+	"archive/zip"
+
 	"git.ngx.fi/c0mm4nd/tronetl/tron"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cobra"
@@ -28,7 +30,7 @@ func main() {
 	startTimestamp := defaults.Uint64("start-timestamp", 0, "only visible for cmd A")
 	endTimestamp := defaults.Uint64("end-timestamp", 0, "only visible for cmd A")
 
-	cmdBlocksAndTxs := pflag.NewFlagSet("export_blocks", pflag.ExitOnError)
+	cmdBlocksAndTxs := pflag.NewFlagSet("export_blocks_and_transactions", pflag.ExitOnError)
 	blksOutput := cmdBlocksAndTxs.String("blocks-output", "blocks.csv", "blocks output")
 	txsOutput := cmdBlocksAndTxs.String("transactions-output", "transactions.csv", "transactions output")
 	trc10Output := cmdBlocksAndTxs.String("trc10-output", "trc10.csv", "trc10 output")
@@ -39,8 +41,8 @@ func main() {
 	filterContracts := cmdTokenTf.StringArray("contracts", []string{}, "limit contracts")
 	cmdTokenTf.AddFlagSet(defaults)
 
-	exportBlocksCmd := &cobra.Command{
-		Use: "export_blocks",
+	exportBlocksAndTransactionsCmd := &cobra.Command{
+		Use: "export_blocks_and_transactions",
 		Run: func(cmd *cobra.Command, args []string) {
 			var err error
 			var blksOut, txsOut, trc10Out *os.File
@@ -59,7 +61,7 @@ func main() {
 				chk(err)
 			}
 
-			exportBlocksAndTransactions(&ExportBlocksOptions{
+			exportBlocksAndTransactions(&ExportBlocksAndTransactionsOptions{
 				blksOutput:  blksOut,
 				txsOutput:   txsOut,
 				trc10Output: trc10Out,
@@ -77,7 +79,7 @@ func main() {
 			})
 		},
 	}
-	exportBlocksCmd.Flags().AddFlagSet(cmdBlocksAndTxs)
+	exportBlocksAndTransactionsCmd.Flags().AddFlagSet(cmdBlocksAndTxs)
 
 	exportTokenTransfersCmd := &cobra.Command{
 		Use: "export_token_transfers",
@@ -91,8 +93,6 @@ func main() {
 
 			exportTransfers(&ExportTransferOptions{
 				output: tfOut,
-				// withBlockOutput:       blockOutput,
-				// withTransactionOutput: transactionOutput,
 
 				ProviderURI: *providerURI,
 				StartBlock:  *startBlock,
@@ -123,20 +123,39 @@ func main() {
 			}
 
 			r := gin.Default()
-			r.GET("/export_token_transfers", func(ctx *gin.Context) {
-				// c, err := websocket.Accept(ctx.Writer, ctx.Request, &websocket.AcceptOptions{
-				// 	InsecureSkipVerify: true,
-				// 	OriginPatterns:     []string{"172.24.1.1:54173"},
-				// })
-				// chk(err)
-				// defer c.Close(websocket.StatusInternalError, "the sky is falling")
+			r.GET("/export_blocks_and_transactions", func(ctx *gin.Context) {
+				var zipBuffer *bytes.Buffer = new(bytes.Buffer)
+				var zipWriter *zip.Writer = zip.NewWriter(zipBuffer)
+				blksOut, err := zipWriter.Create("blocks.csv")
+				chk(err)
+				txsOut, err := zipWriter.Create("transactions.csv")
+				chk(err)
+				trc10Out, err := zipWriter.Create("trc10.csv")
+				chk(err)
 
-				// writer, err := c.Writer(ctx, websocket.MessageText)
-				// chk(err)
+				options := &ExportBlocksAndTransactionsOptions{
+					blksOutput:  blksOut,
+					txsOutput:   txsOut,
+					trc10Output: trc10Out,
+
+					ProviderURI:    *providerURI,
+					StartBlock:     tryStr2Uint(ctx.Query("start-block")),
+					EndBlock:       tryStr2Uint(ctx.Query("end-block")),
+					StartTimestamp: tryStr2Uint(ctx.Query("start-timestamp")),
+					EndTimestamp:   tryStr2Uint(ctx.Query("end-timestamp")),
+
+					WithTRXTransactions: txsOut != nil,   // TODO
+					WithTRC10Transfers:  trc10Out != nil, // TODO
+				}
+				exportBlocksAndTransactions(options)
+
+				ctx.Header("Content-Disposition", "attachment;filename=export.zip")
+				ctx.Data(http.StatusOK, "application/zip", zipBuffer.Bytes())
+			}).GET("/export_token_transfers", func(ctx *gin.Context) {
 				writer := new(bytes.Buffer)
 				options := &ExportTransferOptions{
 					output:         writer,
-					ProviderURI:    "http://localhost",
+					ProviderURI:    *providerURI,
 					StartBlock:     tryStr2Uint(ctx.Query("start-block")),
 					EndBlock:       tryStr2Uint(ctx.Query("end-block")),
 					StartTimestamp: tryStr2Uint(ctx.Query("start-timestamp")),
@@ -145,8 +164,6 @@ func main() {
 				}
 				exportTransfers(options)
 
-				// writer.Close()
-				// c.Close(websocket.StatusNormalClosure, "")
 				ctx.Header("Content-Disposition", "attachment;filename=token_transfer.csv")
 				ctx.Data(http.StatusOK, "text/csv", writer.Bytes())
 			})
@@ -155,7 +172,7 @@ func main() {
 		},
 	}
 
-	rootCmd.AddCommand(exportBlocksCmd)
+	rootCmd.AddCommand(exportBlocksAndTransactionsCmd)
 	rootCmd.AddCommand(exportTokenTransfersCmd)
 	rootCmd.AddCommand(serverCmd)
 
