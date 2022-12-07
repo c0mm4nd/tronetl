@@ -19,30 +19,31 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "tronetl",
 	Short: "tronetl",
-	Long:  `tronetl is a CLI tool for parsing blockchain data from tron network`,
+	Long:  `tronetl is a CLI tool for parsing blockchain data from tron network to CSV format files`,
 }
 
 func main() {
 	defaults := pflag.NewFlagSet("defaults for all commands", pflag.ExitOnError)
-	providerURI := defaults.String("provider-uri", "http://localhost", "visible for all commands")
-	startBlock := defaults.Uint64("start-block", 0, "only visible for cmd A")
-	endBlock := defaults.Uint64("end-block", 0, "only visible for cmd A")
-	startTimestamp := defaults.Uint64("start-timestamp", 0, "only visible for cmd A")
-	endTimestamp := defaults.Uint64("end-timestamp", 0, "only visible for cmd A")
+	providerURI := defaults.String("provider-uri", "http://localhost", "the base uri of the tron fullnode (without port)")
+	startBlock := defaults.Uint64("start-block", 0, "the starting block number")
+	endBlock := defaults.Uint64("end-block", 0, "the ending block number")
+	startTimestamp := defaults.Uint64("start-timestamp", 0, "the starting block's timestamp (in UTC)")
+	endTimestamp := defaults.Uint64("end-timestamp", 0, "the ending block's timestamp (in UTC)")
 
 	cmdBlocksAndTxs := pflag.NewFlagSet("export_blocks_and_transactions", pflag.ExitOnError)
-	blksOutput := cmdBlocksAndTxs.String("blocks-output", "blocks.csv", "blocks output")
-	txsOutput := cmdBlocksAndTxs.String("transactions-output", "transactions.csv", "transactions output")
-	trc10Output := cmdBlocksAndTxs.String("trc10-output", "trc10.csv", "trc10 output")
+	blksOutput := cmdBlocksAndTxs.String("blocks-output", "blocks.csv", "the CSV file for block outputs, use - to omit")
+	txsOutput := cmdBlocksAndTxs.String("transactions-output", "transactions.csv", "the CSV file for transaction outputs, use - to omit")
+	trc10Output := cmdBlocksAndTxs.String("trc10-output", "trc10.csv", "the CSV file for trc10 outputs, use - to omit")
 	cmdBlocksAndTxs.AddFlagSet(defaults)
 
 	cmdTokenTf := pflag.NewFlagSet("export_token_transfers", pflag.ExitOnError)
-	tfOutput := cmdTokenTf.String("output", "token_transfer.csv", "transfer output")
-	filterContracts := cmdTokenTf.StringArray("contracts", []string{}, "limit contracts")
+	tfOutput := cmdTokenTf.String("output", "token_transfer.csv", "the CSV file for token transfer outputs, use - to omit")
+	filterContracts := cmdTokenTf.StringArray("contracts", []string{}, "just output selected contracts' transfers")
 	cmdTokenTf.AddFlagSet(defaults)
 
 	exportBlocksAndTransactionsCmd := &cobra.Command{
-		Use: "export_blocks_and_transactions",
+		Use:   "export_blocks_and_transactions",
+		Short: "export blocks, with the blocks' trx and trc10 transactions",
 		Run: func(cmd *cobra.Command, args []string) {
 			var err error
 			var blksOut, txsOut, trc10Out *os.File
@@ -82,7 +83,8 @@ func main() {
 	exportBlocksAndTransactionsCmd.Flags().AddFlagSet(cmdBlocksAndTxs)
 
 	exportTokenTransfersCmd := &cobra.Command{
-		Use: "export_token_transfers",
+		Use:   "export_token_transfers",
+		Short: "export smart contract token's transfers",
 		Run: func(cmd *cobra.Command, args []string) {
 			var err error
 			var tfOut *os.File
@@ -107,7 +109,8 @@ func main() {
 	exportTokenTransfersCmd.Flags().AddFlagSet(cmdTokenTf)
 
 	serverCmd := &cobra.Command{
-		Use: "server",
+		Use:   "server",
+		Short: "run a server for servings the export tasks",
 		Run: func(cmd *cobra.Command, args []string) {
 			cli := tron.NewTronClient("http://localhost")
 
