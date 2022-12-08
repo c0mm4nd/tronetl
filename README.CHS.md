@@ -1,6 +1,6 @@
 # 波场网络数据解析 TronETL
 
-TRONETL 是 TRON 协议的 ETL 助手
+TRONETL 是 TRON Protocol 的 ETL 助手
 
 ## 编程语言
 
@@ -27,7 +27,7 @@ go install .
 tronetl -h
 ```
 
-＃＃ 用法
+## 用法
 
 ```bash
 tronetl 是一个 CLI 工具，用于将区块链数据从 tron 网络解析为 CSV 格式文件
@@ -47,6 +47,8 @@ tronetl 是一个 CLI 工具，用于将区块链数据从 tron 网络解析为 
 
 使用“tronetl [command] --help”获取有关命令的更多信息。
 ```
+
+ETL 结果的架构写在[此文档中](./SCHEMA.md)
 
 ### export_blocks_and_transactions
 
@@ -74,9 +76,9 @@ Flag：
 导出智能合约代币的转账
 
 用法：
-   tronetl export_token_transfers [标志]
+   tronetl export_token_transfers [flags]
 
-标志：
+Flag：
        --contracts stringArray 只输出选定合约的转账
        --end-block uint 结束块号
        --end-timestamp uint 结束块的时间戳（UTC）

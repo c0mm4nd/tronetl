@@ -2,7 +2,7 @@
 # Data Structure
 
 In the design of the data structure, the compatibility with the CSV format output by the tronetl project is first guaranteed.
-And based on this, special parameters in the Tron network are added at the end.
+And based on this, special parameters in the Tron network are appendec to the tail.
 
 ## blocks.csv
 

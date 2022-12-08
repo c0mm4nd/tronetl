@@ -44,6 +44,8 @@ Flags:
 Use "tronetl [command] --help" for more information about a command.
 ```
 
+ETL results' schema are written [in this doc](./SCHEMA.md)
+
 ### export_blocks_and_transactions
 
 ```bash
