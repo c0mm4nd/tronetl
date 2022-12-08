@@ -36,14 +36,7 @@ func exportTransfers(options *ExportTransferOptions) {
 
 	if options.StartTimestamp != 0 {
 		// fast locate estimate start height
-
-		// var blockEnc *csvutil.Encoder
-		// if options.withBlockOutput != nil {
-		// 	w := csv.NewWriter(options.withBlockOutput)
-		// 	defer w.Flush()
-		// 	blockEnc = csvutil.NewEncoder(w)
-		// }
-
+		
 		estimateStartNumber := locateStartBlock(cli, options.StartTimestamp)
 
 		for number := estimateStartNumber; ; number++ {
