@@ -29,7 +29,7 @@ func NewTronClient(providerURL string) *TronClient {
 	}
 }
 
-func (c *TronClient) GetTxInfosByNumber(number uint64) []TxInfo {
+func (c *TronClient) GetTxInfosByNumber(number uint64) []HTTPTxInfo {
 	url := c.httpURI + "/wallet/gettransactioninfobyblocknum"
 	payload, err := json.Marshal(map[string]any{
 		"num": number,
@@ -40,7 +40,7 @@ func (c *TronClient) GetTxInfosByNumber(number uint64) []TxInfo {
 	body, err := io.ReadAll(resp.Body)
 	chk(err)
 
-	var txInfos []TxInfo
+	var txInfos []HTTPTxInfo
 	err = json.Unmarshal(body, &txInfos)
 	chk(err)
 

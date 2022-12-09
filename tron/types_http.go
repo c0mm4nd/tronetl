@@ -5,55 +5,83 @@ import (
 	"math/big"
 )
 
-type TxInfo struct {
-	Log []struct {
-		Address string   `json:"address"`
-		Data    string   `json:"data"`
-		Topics  []string `json:"topics"`
-	} `json:"log,omitempty"`
-	Fee            int      `json:"fee,omitempty"`
-	BlockNumber    int      `json:"blockNumber"`
-	ContractResult []string `json:"contractResult"`
-	BlockTimeStamp int64    `json:"blockTimeStamp"`
-	Receipt        struct {
+// follow https://github.com/tronprotocol/protocol/blob/2351aa6c2d708bf5ef47baf70410b3bc87d65fa7/core/Tron.proto#L341
+type HTTPTxInfo struct {
+	ID              string   `json:"id"`
+	Fee             int      `json:"fee,omitempty"`
+	BlockNumber     int      `json:"blockNumber"`
+	BlockTimeStamp  int64    `json:"blockTimeStamp"`
+	ContractResult  []string `json:"contractResult"`
+	ContractAddress string   `json:"contract_address"`
+	Receipt         struct {
+		EnergyUsage       int64  `json:"energy_usage,omitempty"`
+		EnergyFee         int64  `json:"energy_fee,omitempty"`
+		OriginEnergyUsage int64  `json:"origin_energy_usage,omitempty"`
+		EnergyUsageTotal  int64  `json:"energy_usage_total,omitempty"`
+		NetUsage          int64  `json:"net_usage,omitempty"`
+		NetFee            int    `json:"net_fee,omitempty"`
 		Result            string `json:"result"`
-		NetFee            int    `json:"net_fee"`
-		EnergyUsageTotal  int    `json:"energy_usage_total"`
-		OriginEnergyUsage int    `json:"origin_energy_usage"`
 	} `json:"receipt"`
-	ID                   string `json:"id"`
-	ContractAddress      string `json:"contract_address,omitempty"`
-	InternalTransactions []struct {
-		CallerAddress     string `json:"caller_address"`
-		Note              string `json:"note"`
-		TransferToAddress string `json:"transferTo_address"`
-		CallValueInfo     []struct {
-		} `json:"callValueInfo"`
-		Hash string `json:"hash"`
-	} `json:"internal_transactions,omitempty"`
+	Log                           []*HTTPTxInfoLog           `json:"log,omitempty"`
+	Result                        any                        `json:"result,omitempty"` // enum code { SUCESS = 0; FAILED = 1; }
+	ResMessage                    string                     `json:"resMessage,omitempty"`
+	AssetIssueID                  string                     `json:"assetIssueID,omitempty"`
+	WithdrawAmount                int64                      `json:"withdraw_amount,omitempty"`
+	UnfreezeAmount                int64                      `json:"unfreeze_amount,omitempty"`
+	InternalTransactions          []*HTTPInternalTransaction `json:"internal_transactions,omitempty"`
+	ExchangeReceivedAmount        int64                      `json:"exchange_received_amount,omitempty"`
+	ExchangeInjectAnotherAmount   int64                      `json:"exchange_inject_another_amount,omitempty"`
+	ExchangeWithdrawAnotherAmount int64                      `json:"exchange_withdraw_another_amount,omitempty"`
+	ExchangeID                    int64                      `json:"exchange_id,omitempty"`
+	ShieldedTransactionFee        int64                      `json:"shielded_transaction_fee,omitempty"`
 }
 
+type HTTPTxInfoLog struct {
+	Address string   `json:"address"`
+	Topics  []string `json:"topics"`
+	Data    string   `json:"data"`
+}
+
+type HTTPInternalTransaction struct {
+	TransactionHash   string                                  `json:"hash"`
+	CallerAddress     string                                  `json:"caller_address"`
+	TransferToAddress string                                  `json:"transferTo_address"`
+	CallValueInfo     []*HTTPInternalTransactionCallValueInfo `json:"callValueInfo,omitempty"`
+	Note              string                                  `json:"note"`
+	Rejected          bool                                    `json:"rejected"`
+}
+
+// https://github.com/tronprotocol/protocol/blob/2351aa6c2d708bf5ef47baf70410b3bc87d65fa7/core/Tron.proto#L509
+type HTTPInternalTransactionCallValueInfo struct {
+	CallValue int64  `json:"callValue,omitempty"`
+	TokenId   string `json:"tokenId,omitempty"`
+}
+
+// https://github.com/tronprotocol/protocol/blob/2351aa6c2d708bf5ef47baf70410b3bc87d65fa7/core/Tron.proto#L406
 type HTTPBlock struct {
-	BlockID     string `json:"blockID"`
-	BlockHeader struct {
-		RawData struct {
-			Number         int    `json:"number"`
-			TxTrieRoot     string `json:"txTrieRoot"`
-			WitnessAddress string `json:"witness_address"`
-			ParentHash     string `json:"parentHash"`
-			Version        int    `json:"version"`
-			Timestamp      int64  `json:"timestamp"`
-		} `json:"raw_data"`
-		WitnessSignature string `json:"witness_signature"`
-	} `json:"block_header"`
+	BlockID      string            `json:"blockID"`
+	BlockHeader  *HTTPBlockHeader  `json:"block_header"`
 	Transactions []HTTPTransaction `json:"transactions"`
 }
 
-// Values: https://tronprotocol.github.io/documentation-en/mechanism-algorithm/system-contracts/
-//TransferAssetContract
-//TriggerSmartContract
-//TransferContract
+type HTTPBlockHeader struct {
+	RawData struct {
+		Timestamp  int64  `json:"timestamp,omitempty"`
+		TxTrieRoot string `json:"txTrieRoot,omitempty"`
+		ParentHash string `json:"parentHash"`
 
+		Number           int    `json:"number"`
+		WitnessAddress   string `json:"witness_address"`
+		Version          int    `json:"version,omitempty"`
+		AccountStateRoot string `json:"accountStateRoot,omitempty"`
+	} `json:"raw_data"`
+	WitnessSignature string `json:"witness_signature"`
+}
+
+// Values: https://tronprotocol.github.io/documentation-en/mechanism-algorithm/system-contracts/
+// TransferAssetContract
+// TriggerSmartContract
+// TransferContract
 type HTTPTransaction struct {
 	Ret []struct {
 		ContractRet string `json:"contractRet"`
@@ -73,11 +101,13 @@ type HTTPTransaction struct {
 }
 
 type ContractCall struct {
-	Parameter struct {
+	ContractType string `json:"type"`
+	Parameter    struct {
 		Value   json.RawMessage `json:"value"`
 		TypeURL string          `json:"type_url"`
-	} `json:"parameter"`
-	Type string `json:"type"`
+	} `json:"parameter"` // google.any decode with ContractType
+	Provider     string `json:"provider"`
+	PermissionID int32  `json:"Permission_id"`
 }
 
 type TRC10TransferParams struct {

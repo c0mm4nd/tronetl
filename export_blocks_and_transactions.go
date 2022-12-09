@@ -68,9 +68,10 @@ func exportBlocksAndTransactions(options *ExportBlocksAndTransactionsOptions) {
 
 				if options.WithTRC10Transfers {
 					for callIndex, contractCall := range httptx.RawData.Contract {
-						if contractCall.Type == "TransferAssetContract" ||
-							contractCall.Type == "TransferContract" {
+						if contractCall.ContractType == "TransferAssetContract" ||
+							contractCall.ContractType == "TransferContract" {
 							var tfParams tron.TRC10TransferParams
+							
 							err := json.Unmarshal(contractCall.Parameter.Value, &tfParams)
 							chk(err)
 							csvTf := NewCsvTRC10Transfer(number, txIndex, callIndex, &httpblock.Transactions[txIndex], &tfParams)
