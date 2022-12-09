@@ -47,12 +47,12 @@ func (c *TronClient) GetTxInfosByNumber(number uint64) []HTTPTxInfo {
 	return txInfos
 }
 
-func (c *TronClient) GetJSONBlockByNumber(number *big.Int, requireDetail bool) *JSONBlock {
+func (c *TronClient) GetJSONBlockByNumberWithTxs(number *big.Int) *JSONBlockWithTxs {
 	payload, err := json.Marshal(map[string]any{
 		"jsonrpc": "2.0",
 		"method":  "eth_getBlockByNumber",
 		"params": []any{
-			toBlockNumArg(number), requireDetail,
+			toBlockNumArg(number), true,
 		},
 		"id": rand.Int(),
 	})
@@ -63,7 +63,32 @@ func (c *TronClient) GetJSONBlockByNumber(number *big.Int, requireDetail bool) *
 	chk(err)
 
 	var rpcResp JSONResponse
-	var block JSONBlock
+	var block JSONBlockWithTxs
+	err = json.Unmarshal(body, &rpcResp)
+	chk(err)
+	err = json.Unmarshal(rpcResp.Result, &block)
+	chk(err)
+
+	return &block
+}
+
+func (c *TronClient) GetJSONBlockByNumberWithTxIDs(number *big.Int) *JSONBlockWithTxIDs {
+	payload, err := json.Marshal(map[string]any{
+		"jsonrpc": "2.0",
+		"method":  "eth_getBlockByNumber",
+		"params": []any{
+			toBlockNumArg(number), false,
+		},
+		"id": rand.Int(),
+	})
+	chk(err)
+	resp, err := http.Post(c.jsonURI, "application/json", bytes.NewBuffer(payload))
+	chk(err)
+	body, err := io.ReadAll(resp.Body)
+	chk(err)
+
+	var rpcResp JSONResponse
+	var block JSONBlockWithTxIDs
 	err = json.Unmarshal(body, &rpcResp)
 	chk(err)
 	err = json.Unmarshal(rpcResp.Result, &block)

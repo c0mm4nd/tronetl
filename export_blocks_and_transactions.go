@@ -37,11 +37,8 @@ func exportBlocksAndTransactions(options *ExportBlocksAndTransactionsOptions) {
 	defer blksCsvWriter.Flush()
 	blksCsvEncoder := csvutil.NewEncoder(blksCsvWriter)
 
-	requireDetail := false
 	var txsCsvEncoder, trc10CsvEncoder *csvutil.Encoder
 	if options.WithTRXTransactions {
-		requireDetail = true
-
 		txsCsvWriter := csv.NewWriter(options.txsOutput)
 		defer txsCsvWriter.Flush()
 		txsCsvEncoder = csvutil.NewEncoder(txsCsvWriter)
@@ -56,7 +53,7 @@ func exportBlocksAndTransactions(options *ExportBlocksAndTransactionsOptions) {
 	for number := options.StartBlock; number <= options.EndBlock; number++ {
 		num := new(big.Int).SetUint64(number)
 
-		jsonblock := cli.GetJSONBlockByNumber(num, requireDetail)
+		jsonblock := cli.GetJSONBlockByNumberWithTxs(num)
 		httpblock := cli.GetHTTPBlockByNumber(num)
 		csvBlock := NewCsvBlock(jsonblock, httpblock)
 		if options.WithTRXTransactions {
@@ -71,7 +68,7 @@ func exportBlocksAndTransactions(options *ExportBlocksAndTransactionsOptions) {
 						if contractCall.ContractType == "TransferAssetContract" ||
 							contractCall.ContractType == "TransferContract" {
 							var tfParams tron.TRC10TransferParams
-							
+
 							err := json.Unmarshal(contractCall.Parameter.Value, &tfParams)
 							chk(err)
 							csvTf := NewCsvTRC10Transfer(number, txIndex, callIndex, &httpblock.Transactions[txIndex], &tfParams)

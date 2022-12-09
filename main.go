@@ -114,7 +114,7 @@ func main() {
 		Run: func(cmd *cobra.Command, args []string) {
 			cli := tron.NewTronClient("http://localhost")
 
-			latestBlock := cli.GetJSONBlockByNumber(nil, false)
+			latestBlock := cli.GetJSONBlockByNumberWithTxIDs(nil)
 			log.Printf("latest block: %d", *latestBlock.Number)
 
 			tryStr2Uint := func(str string) uint64 {

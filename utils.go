@@ -8,12 +8,12 @@ import (
 )
 
 func locateStartBlock(cli *tron.TronClient, startTimestamp uint64) uint64 {
-	latestBlock := cli.GetJSONBlockByNumber(nil, false)
+	latestBlock := cli.GetJSONBlockByNumberWithTxIDs(nil)
 	top := latestBlock.Number
 	half := uint64(*top) / 2
 	estimateStartNumber := half
 	for {
-		block := cli.GetJSONBlockByNumber(new(big.Int).SetUint64(estimateStartNumber), false)
+		block := cli.GetJSONBlockByNumberWithTxIDs(new(big.Int).SetUint64(estimateStartNumber))
 		if block == nil {
 			break
 		}
@@ -43,12 +43,12 @@ func locateStartBlock(cli *tron.TronClient, startTimestamp uint64) uint64 {
 }
 
 func locateEndBlock(cli *tron.TronClient, endTimestamp uint64) uint64 {
-	latestBlock := cli.GetJSONBlockByNumber(nil, false)
+	latestBlock := cli.GetJSONBlockByNumberWithTxIDs(nil)
 	top := latestBlock.Number
 	half := uint64(*top) / 2
 	estimateEndNumber := half
 	for {
-		block := cli.GetJSONBlockByNumber(new(big.Int).SetUint64(estimateEndNumber), false)
+		block := cli.GetJSONBlockByNumberWithTxIDs(new(big.Int).SetUint64(estimateEndNumber))
 		if block == nil {
 			break
 		}

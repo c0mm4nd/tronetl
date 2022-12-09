@@ -89,7 +89,7 @@ type CsvBlock struct {
 	WitnessSignature string `csv:"witness_signature"`
 }
 
-func NewCsvBlock(jsonblock *tron.JSONBlock, httpblock *tron.HTTPBlock) *CsvBlock {
+func NewCsvBlock(jsonblock *tron.JSONBlockWithTxs, httpblock *tron.HTTPBlock) *CsvBlock {
 	return &CsvBlock{
 		Number:           uint64(*jsonblock.Number),
 		Hash:             jsonblock.Hash[2:],
