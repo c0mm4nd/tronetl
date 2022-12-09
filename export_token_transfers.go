@@ -12,8 +12,10 @@ import (
 )
 
 type ExportTransferOptions struct {
-	// outputType string // failed to output to a conn with
-	output io.Writer
+	// outputType string // failed to tfOutput to a conn with
+	tfOutput         io.Writer
+	logOutput        io.Writer
+	internalTxOutput io.Writer
 	// withBlockOutput io.Writer
 
 	ProviderURI string `json:"provider_uri,omitempty"`
@@ -30,9 +32,17 @@ type ExportTransferOptions struct {
 func exportTransfers(options *ExportTransferOptions) {
 	cli := tron.NewTronClient(options.ProviderURI)
 
-	w := csv.NewWriter(options.output)
-	defer w.Flush()
-	enc := csvutil.NewEncoder(w)
+	tfWriter := csv.NewWriter(options.tfOutput)
+	defer tfWriter.Flush()
+	tfEncoder := csvutil.NewEncoder(tfWriter)
+
+	logWriter := csv.NewWriter(options.tfOutput)
+	defer logWriter.Flush()
+	logEncoder := csvutil.NewEncoder(logWriter)
+
+	internalTxWriter := csv.NewWriter(options.tfOutput)
+	defer internalTxWriter.Flush()
+	internalTxEncoder := csvutil.NewEncoder(internalTxWriter)
 
 	if options.StartTimestamp != 0 {
 		// fast locate estimate start height
@@ -92,10 +102,19 @@ func exportTransfers(options *ExportTransferOptions) {
 
 					tf := ExtractTransferFromLog(log.Topics, log.Data, log.Address, uint(logIndex), txHash, number)
 					if tf != nil {
-						err := enc.Encode(tf)
+						err := tfEncoder.Encode(tf)
 						chk(err)
 					}
+
+					err := logEncoder.Encode(NewCsvLog(number, txHash, uint(logIndex), log))
+					chk(err)
 				}
+
+				for _, internalTx := range txInfo.InternalTransactions {
+					err := internalTxEncoder.Encode(NewCsvInternalTx(internalTx))
+					chk(err)
+				}
+
 			}
 
 			log.Printf("parsed block %d", number)

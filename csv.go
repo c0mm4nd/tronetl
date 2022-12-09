@@ -1,6 +1,11 @@
 package main
 
-import "git.ngx.fi/c0mm4nd/tronetl/tron"
+import (
+	"strconv"
+	"strings"
+
+	"git.ngx.fi/c0mm4nd/tronetl/tron"
+)
 
 // CsvTransaction represents a tron tx, not trc10
 // 1 TRX = 1000000 sun
@@ -147,5 +152,52 @@ func NewCsvTRC10Transfer(blockNum uint64, txIndex, callIndex int, httpTx *tron.H
 		FromAddress: tfParams.OwnerAddress,
 		ToAddress:   tfParams.ToAddress,
 		Value:       tfParams.Amount.String(),
+	}
+}
+
+type CsvLog struct {
+	BlockNumber     uint64 `json:"blockNumber" csv:"block_number"`
+	TransactionHash string `json:"transaction_hash" csv:"transaction_hash"`
+	LogIndex        uint   `json:"logIndex" csv:"log_index"`
+
+	Address string `csv:"address"`
+	Topics  string `csv:"topics"`
+	Data    string `csv:"data"`
+}
+
+func NewCsvLog(blockNumber uint64, txHash string, logIndex uint, log *tron.HTTPTxInfoLog) *CsvLog {
+	return &CsvLog{
+		BlockNumber:     blockNumber,
+		TransactionHash: txHash,
+		LogIndex:        logIndex,
+
+		Address: log.Address,
+		Topics:  strings.Join(log.Topics, ";"),
+		Data:    log.Data,
+	}
+}
+
+type CsvInternalTx struct {
+	TransactionHash   string `json:"hash"`
+	CallerAddress     string `json:"caller_address"`
+	TransferToAddress string `json:"transferTo_address"`
+	CallValueInfo     string `json:"callValueInfo,omitempty"`
+	Note              string `json:"note"`
+	Rejected          bool   `json:"rejected"`
+}
+
+func NewCsvInternalTx(itx *tron.HTTPInternalTransaction) *CsvInternalTx {
+	callValues := make([]string, len(itx.CallValueInfo))
+	for i, callValue := range itx.CallValueInfo {
+		callValues[i] = callValue.TokenID + ":" + strconv.FormatInt(callValue.CallValue, 10)
+	}
+
+	return &CsvInternalTx{
+		TransactionHash:   itx.TransactionHash,
+		CallerAddress:     itx.CallerAddress,
+		TransferToAddress: itx.TransferToAddress,
+		CallValueInfo:     strings.Join(callValues, ";"),
+		Note:              itx.Note,
+		Rejected:          itx.Rejected,
 	}
 }

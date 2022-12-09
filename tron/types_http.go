@@ -54,7 +54,7 @@ type HTTPInternalTransaction struct {
 // https://github.com/tronprotocol/protocol/blob/2351aa6c2d708bf5ef47baf70410b3bc87d65fa7/core/Tron.proto#L509
 type HTTPInternalTransactionCallValueInfo struct {
 	CallValue int64  `json:"callValue,omitempty"`
-	TokenId   string `json:"tokenId,omitempty"`
+	TokenID   string `json:"tokenId,omitempty"`
 }
 
 // https://github.com/tronprotocol/protocol/blob/2351aa6c2d708bf5ef47baf70410b3bc87d65fa7/core/Tron.proto#L406

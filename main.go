@@ -37,7 +37,9 @@ func main() {
 	cmdBlocksAndTxs.AddFlagSet(defaults)
 
 	cmdTokenTf := pflag.NewFlagSet("export_token_transfers", pflag.ExitOnError)
-	tfOutput := cmdTokenTf.String("output", "token_transfer.csv", "the CSV file for token transfer outputs, use - to omit")
+	tfOutput := cmdTokenTf.String("transfers-output", "token_transfers.csv", "the CSV file for token transfer outputs, use - to omit")
+	logOutput := cmdTokenTf.String("logs-output", "logs.csv", "the CSV file for transaction log outputs, use - to omit")
+	internalTxOutput := cmdTokenTf.String("internal-tx-output", "internal_transactions.csv", "the CSV file for internal transaction outputs, use - to omit")
 	filterContracts := cmdTokenTf.StringArray("contracts", []string{}, "just output selected contracts' transfers")
 	cmdTokenTf.AddFlagSet(defaults)
 
@@ -93,8 +95,22 @@ func main() {
 				chk(err)
 			}
 
+			var logOut *os.File
+			if *txsOutput != "-" {
+				tfOut, err = os.Create(*logOutput)
+				chk(err)
+			}
+
+			var internalTxOut *os.File
+			if *txsOutput != "-" {
+				tfOut, err = os.Create(*internalTxOutput)
+				chk(err)
+			}
+
 			exportTransfers(&ExportTransferOptions{
-				output: tfOut,
+				tfOutput:         tfOut,
+				logOutput:        logOut,
+				internalTxOutput: internalTxOut,
 
 				ProviderURI: *providerURI,
 				StartBlock:  *startBlock,
@@ -155,20 +171,30 @@ func main() {
 				ctx.Header("Content-Disposition", "attachment;filename=export.zip")
 				ctx.Data(http.StatusOK, "application/zip", zipBuffer.Bytes())
 			}).GET("/export_token_transfers", func(ctx *gin.Context) {
-				writer := new(bytes.Buffer)
+				var zipBuffer *bytes.Buffer = new(bytes.Buffer)
+				var zipWriter *zip.Writer = zip.NewWriter(zipBuffer)
+				tfOut, err := zipWriter.Create("token_transfers.csv")
+				chk(err)
+				logOut, err := zipWriter.Create("logs.csv")
+				chk(err)
+				internalTxOut, err := zipWriter.Create("internal_transactions.csv")
+				chk(err)
+
 				options := &ExportTransferOptions{
-					output:         writer,
-					ProviderURI:    *providerURI,
-					StartBlock:     tryStr2Uint(ctx.Query("start-block")),
-					EndBlock:       tryStr2Uint(ctx.Query("end-block")),
-					StartTimestamp: tryStr2Uint(ctx.Query("start-timestamp")),
-					EndTimestamp:   tryStr2Uint(ctx.Query("end-timestamp")),
-					Contracts:      ctx.QueryArray("contracts"),
+					tfOutput:         tfOut,
+					logOutput:        logOut,
+					internalTxOutput: internalTxOut,
+					ProviderURI:      *providerURI,
+					StartBlock:       tryStr2Uint(ctx.Query("start-block")),
+					EndBlock:         tryStr2Uint(ctx.Query("end-block")),
+					StartTimestamp:   tryStr2Uint(ctx.Query("start-timestamp")),
+					EndTimestamp:     tryStr2Uint(ctx.Query("end-timestamp")),
+					Contracts:        ctx.QueryArray("contracts"),
 				}
 				exportTransfers(options)
 
-				ctx.Header("Content-Disposition", "attachment;filename=token_transfer.csv")
-				ctx.Data(http.StatusOK, "text/csv", writer.Bytes())
+				ctx.Header("Content-Disposition", "attachment;filename=export.zip")
+				ctx.Data(http.StatusOK, "application/zip", zipBuffer.Bytes())
 			})
 			r.Run(":54173")
 
