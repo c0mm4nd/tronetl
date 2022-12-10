@@ -109,6 +109,37 @@ trc10交易以外事件类型详见[官方文档中system-contracts章节](https
 
 ---
 
+## 日志.csv
+
+日志数据结构如下：
+
+| Column           | Type                |
+| ---------------- | ------------------- |
+| block_number     | uint64              |
+| transaction_hash | hex_string          |
+| log_index        | int                 |
+| address          | address             |
+| topics           | topics joint by `;` |
+| data             | hex_string          |
+
+---
+
+## 内部交易.csv
+
+txinfo内部交易数据结构如下：
+
+| Column             | Type                                                                    |
+| ------------------ | ----------------------------------------------------------------------- |
+| transaction_hash   | uint64                                                                  |
+| internal_index     | uint                                                                    |
+| caller_address     | address                                                                 |
+| transferTo_address | address                                                                 |
+| callValueInfo      | string, 表示由 `;` 连接的列表 列表中的每个项目都是一个 `[TokenID]:[Value]` 对  |
+| note               | hex_string                                                              |
+| rejected           | bool                                                                    |
+
+---
+
 ## 备注
 
 对所有 `address` 类型，都解析为T-addr格式（即T开头的base58字符串）。

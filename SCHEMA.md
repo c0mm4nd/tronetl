@@ -110,6 +110,38 @@ The token transaction data structure is as follows:
 
 ---
 
+## logs.csv
+
+The log data structure is as follows:
+
+| Column           | Type                |
+| ---------------- | ------------------- |
+| block_number     | uint64              |
+| transaction_hash | hex_string          |
+| log_index        | int                 |
+| address          | address             |
+| topics           | topics joint by `;` |
+| data             | hex_string          |
+
+---
+
+## internal_transactions.csv
+
+The txinfo's internal transaction data structure is as follows:
+
+| Column             | Type                                                                    |
+| ------------------ | ----------------------------------------------------------------------- |
+| transaction_hash   | uint64                                                                  |
+| internal_index     | uint                                                                    |
+| caller_address     | address                                                                 |
+| transferTo_address | address                                                                 |
+| callValueInfo      | string, as a list joint by `;` each item in the list is a `[TokenID]:[Value]` pair |
+| note               | hex_string                                                              |
+| rejected           | bool                                                                    |
+
+---
+
+
 ## Note
 
 For all `address` types, it is parsed into T-addr format (that is, a base58 string starting with T).
