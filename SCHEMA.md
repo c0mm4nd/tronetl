@@ -129,15 +129,15 @@ The log data structure is as follows:
 
 The txinfo's internal transaction data structure is as follows:
 
-| Column             | Type                                                                    |
-| ------------------ | ----------------------------------------------------------------------- |
-| transaction_hash   | uint64                                                                  |
-| internal_index     | uint                                                                    |
-| caller_address     | address                                                                 |
-| transferTo_address | address                                                                 |
+| Column             | Type                                                                               |
+| ------------------ | ---------------------------------------------------------------------------------- |
+| transaction_hash   | uint64                                                                             |
+| internal_index     | uint                                                                               |
+| caller_address     | address                                                                            |
+| transferTo_address | address                                                                            |
 | callValueInfo      | string, as a list joint by `;` each item in the list is a `[TokenID]:[Value]` pair |
-| note               | hex_string                                                              |
-| rejected           | bool                                                                    |
+| note               | hex_string                                                                         |
+| rejected           | bool                                                                               |
 
 ---
 

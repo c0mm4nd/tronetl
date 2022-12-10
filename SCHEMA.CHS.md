@@ -128,15 +128,15 @@ trc10交易以外事件类型详见[官方文档中system-contracts章节](https
 
 txinfo内部交易数据结构如下：
 
-| Column             | Type                                                                    |
-| ------------------ | ----------------------------------------------------------------------- |
-| transaction_hash   | uint64                                                                  |
-| internal_index     | uint                                                                    |
-| caller_address     | address                                                                 |
-| transferTo_address | address                                                                 |
-| callValueInfo      | string, 表示由 `;` 连接的列表 列表中的每个项目都是一个 `[TokenID]:[Value]` 对  |
-| note               | hex_string                                                              |
-| rejected           | bool                                                                    |
+| Column             | Type                                                                          |
+| ------------------ | ----------------------------------------------------------------------------- |
+| transaction_hash   | uint64                                                                        |
+| internal_index     | uint                                                                          |
+| caller_address     | address                                                                       |
+| transferTo_address | address                                                                       |
+| callValueInfo      | string, 表示由 `;` 连接的列表 列表中的每个项目都是一个 `[TokenID]:[Value]` 对 |
+| note               | hex_string                                                                    |
+| rejected           | bool                                                                          |
 
 ---
 
