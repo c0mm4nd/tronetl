@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"log"
 	"math/big"
 
 	"github.com/btcsuite/btcd/btcutil/base58"
@@ -74,6 +75,10 @@ func hash2Addr(hash string) string {
 }
 
 func hex2TAddr(hexStr string) string {
+	if hexStr[0] == 'T' {
+		log.Printf("Taddr %s input as a hex?", hexStr)
+		return hexStr
+	}
 	if len(hexStr) != 20*2 {
 		panic("not a no-prefix hex addr")
 	}

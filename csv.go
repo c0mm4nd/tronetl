@@ -149,8 +149,8 @@ func NewCsvTRC10Transfer(blockNum uint64, txIndex, callIndex int, httpTx *tron.H
 		ContractCallIndex: callIndex,
 
 		AssetName:   tfParams.AssetName,
-		FromAddress: tfParams.OwnerAddress,
-		ToAddress:   tfParams.ToAddress,
+		FromAddress: hex2TAddr(tfParams.OwnerAddress),
+		ToAddress:   hex2TAddr(tfParams.ToAddress),
 		Value:       tfParams.Amount.String(),
 	}
 }
@@ -171,14 +171,15 @@ func NewCsvLog(blockNumber uint64, txHash string, logIndex uint, log *tron.HTTPT
 		TransactionHash: txHash,
 		LogIndex:        logIndex,
 
-		Address: log.Address,
+		Address: hex2TAddr(log.Address),
 		Topics:  strings.Join(log.Topics, ";"),
 		Data:    log.Data,
 	}
 }
 
 type CsvInternalTx struct {
-	TransactionHash   string `json:"hash"`
+	TransactionHash   string `json:"transaction_hash"`
+	Index             uint   `json:"internal_index"`
 	CallerAddress     string `json:"caller_address"`
 	TransferToAddress string `json:"transferTo_address"`
 	CallValueInfo     string `json:"callValueInfo,omitempty"`
@@ -186,7 +187,7 @@ type CsvInternalTx struct {
 	Rejected          bool   `json:"rejected"`
 }
 
-func NewCsvInternalTx(itx *tron.HTTPInternalTransaction) *CsvInternalTx {
+func NewCsvInternalTx(index uint, itx *tron.HTTPInternalTransaction) *CsvInternalTx {
 	callValues := make([]string, len(itx.CallValueInfo))
 	for i, callValue := range itx.CallValueInfo {
 		callValues[i] = callValue.TokenID + ":" + strconv.FormatInt(callValue.CallValue, 10)
@@ -194,8 +195,9 @@ func NewCsvInternalTx(itx *tron.HTTPInternalTransaction) *CsvInternalTx {
 
 	return &CsvInternalTx{
 		TransactionHash:   itx.TransactionHash,
-		CallerAddress:     itx.CallerAddress,
-		TransferToAddress: itx.TransferToAddress,
+		Index:             index,
+		CallerAddress:     hex2TAddr(itx.CallerAddress),
+		TransferToAddress: hex2TAddr(itx.TransferToAddress),
 		CallValueInfo:     strings.Join(callValues, ";"),
 		Note:              itx.Note,
 		Rejected:          itx.Rejected,

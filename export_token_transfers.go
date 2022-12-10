@@ -110,11 +110,10 @@ func exportTransfers(options *ExportTransferOptions) {
 					chk(err)
 				}
 
-				for _, internalTx := range txInfo.InternalTransactions {
-					err := internalTxEncoder.Encode(NewCsvInternalTx(internalTx))
+				for internalIndex, internalTx := range txInfo.InternalTransactions {
+					err := internalTxEncoder.Encode(NewCsvInternalTx(uint(internalIndex), internalTx))
 					chk(err)
 				}
-
 			}
 
 			log.Printf("parsed block %d", number)
