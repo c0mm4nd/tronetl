@@ -29,7 +29,7 @@ tronetl -h
 
 ## 用法
 
-```bash
+```
 tronetl 是一个 CLI 工具，用于将区块链数据从 tron 网络解析为 CSV 格式文件
 
 用法：
@@ -52,7 +52,7 @@ ETL 结果的架构写在[此文档中](./SCHEMA.md)
 
 ### export_blocks_and_transactions
 
-```bash
+```
 导出区块，包含区块的 trx 和 trc10 交易
 
 用法：
@@ -72,7 +72,7 @@ Flag：
 
 ### export_token_transfers
 
-```bash
+```
 导出智能合约代币的转账
 
 用法：
@@ -82,11 +82,13 @@ Flag：
        --contracts stringArray 只输出选定合约的转账
        --end-block uint 结束块号
        --end-timestamp uint 结束块的时间戳（UTC）
-   -h, --help export_token_transfers 帮助
-       --output string 用于令牌传输输出的 CSV 文件，使用 - 省略（默认“token_transfer.csv”）
+       -h, --help export_token_transfers 帮助
+       --internal-tx-output string   用于内部交易输出的 CSV 文件，使用 - 省略（默认 "internal_transactions.csv")
+       --logs-output string          用于合约事件记录输出的 CSV 文件，使用 - 省略（默认"logs.csv")
        --provider-uri 字符串 tron 全节点的基本 uri（无端口）（默认“http://localhost”）
        --start-block uint 起始块号
        --start-timestamp uint 起始块的时间戳（UTC）
+       --transfers-output string 用于代币输出的 CSV 文件，使用 - 省略（默认“token_transfer.csv”）
 ```
 
 ### server

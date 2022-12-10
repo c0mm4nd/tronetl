@@ -25,7 +25,7 @@ tronetl -h
 
 ## Usage
 
-```bash
+```
 tronetl is a CLI tool for parsing blockchain data from tron network to CSV format files
 
 Usage:
@@ -48,7 +48,7 @@ ETL results' schema are written [in this doc](./SCHEMA.md)
 
 ### export_blocks_and_transactions
 
-```bash
+```
 export blocks, with the blocks' trx and trc10 transactions
 
 Usage:
@@ -68,19 +68,21 @@ Flags:
 
 ### export_token_transfers
 
-```bash
+```
 export smart contract token's transfers
 
 Usage:
   tronetl export_token_transfers [flags]
 
 Flags:
-      --contracts stringArray   just output selected contracts' transfers
-      --end-block uint          the ending block number
-      --end-timestamp uint      the ending block's timestamp (in UTC)
-  -h, --help                    help for export_token_transfers
-      --output string           the CSV file for token transfer outputs, use - to omit (default "token_transfer.csv")
-      --provider-uri string     the base uri of the tron fullnode (without port) (default "http://localhost")
-      --start-block uint        the starting block number
-      --start-timestamp uint    the starting block's timestamp (in UTC)
+      --contracts stringArray       just output selected contracts' transfers
+      --end-block uint              the ending block number
+      --end-timestamp uint          the ending block's timestamp (in UTC)
+  -h, --help                        help for export_token_transfers
+      --internal-tx-output string   the CSV file for internal transaction outputs, use - to omit (default "internal_transactions.csv")
+      --logs-output string          the CSV file for transaction log outputs, use - to omit (default "logs.csv")
+      --provider-uri string         the base uri of the tron fullnode (without port) (default "http://localhost")
+      --start-block uint            the starting block number
+      --start-timestamp uint        the starting block's timestamp (in UTC)
+      --transfers-output string     the CSV file for token transfer outputs, use - to omit (default "token_transfers.csv")
 ```
