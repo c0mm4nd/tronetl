@@ -6,12 +6,14 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
+// JSONResponse is the base struct for JSONRPC2.0, working like ethereum's
 type JSONResponse struct {
 	Jsonrpc string          `json:"jsonrpc"`
 	ID      int             `json:"id"`
 	Result  json.RawMessage `json:"result"`
 }
 
+// JSONBlockWithTxs represents a Block in which Transactions field is a list of Transaction structs
 type JSONBlockWithTxs struct {
 	BaseFeePerGas    interface{}       `json:"baseFeePerGas"`
 	Difficulty       interface{}       `json:"difficulty"`
@@ -36,6 +38,7 @@ type JSONBlockWithTxs struct {
 	Uncles           []string          `json:"uncles"`
 }
 
+// JSONBlockWithTxIDs represents a Block in which Transactions field is a list of Transaction IDs
 type JSONBlockWithTxIDs struct {
 	BaseFeePerGas    interface{}     `json:"baseFeePerGas"`
 	Difficulty       interface{}     `json:"difficulty"`
@@ -60,6 +63,7 @@ type JSONBlockWithTxIDs struct {
 	Uncles           []string        `json:"uncles"`
 }
 
+// JSONTransaction represents a Transaction
 type JSONTransaction struct {
 	BlockHash        string          `json:"blockHash"`
 	BlockNumber      *hexutil.Uint64 `json:"blockNumber"`

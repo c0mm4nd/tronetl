@@ -7,6 +7,7 @@ import (
 	"git.ngx.fi/c0mm4nd/tronetl/tron"
 )
 
+// locateStartBlock is a util for locating the start block by start timestamp
 func locateStartBlock(cli *tron.TronClient, startTimestamp uint64) uint64 {
 	latestBlock := cli.GetJSONBlockByNumberWithTxIDs(nil)
 	top := latestBlock.Number
@@ -42,6 +43,7 @@ func locateStartBlock(cli *tron.TronClient, startTimestamp uint64) uint64 {
 	return estimateStartNumber
 }
 
+// locateEndBlock is a util for locating the end block by end timestamp
 func locateEndBlock(cli *tron.TronClient, endTimestamp uint64) uint64 {
 	latestBlock := cli.GetJSONBlockByNumberWithTxIDs(nil)
 	top := latestBlock.Number

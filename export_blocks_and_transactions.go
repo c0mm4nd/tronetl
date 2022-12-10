@@ -11,12 +11,11 @@ import (
 	"github.com/jszwec/csvutil"
 )
 
+// ExportBlocksAndTransactionsOptions is the option for ExportBlocksAndTransactions func
 type ExportBlocksAndTransactionsOptions struct {
-	// outputType string // failed to output to a conn with
 	blksOutput  io.Writer
 	txsOutput   io.Writer
 	trc10Output io.Writer
-	// withBlockOutput io.Writer
 
 	ProviderURI string `json:"provider_uri,omitempty"`
 	StartBlock  uint64 `json:"start_block,omitempty"`
@@ -30,7 +29,8 @@ type ExportBlocksAndTransactionsOptions struct {
 	WithTRC10Transfers  bool
 }
 
-func exportBlocksAndTransactions(options *ExportBlocksAndTransactionsOptions) {
+// ExportBlocksAndTransactions is the main func for handling export_blocks_and_transactions command
+func ExportBlocksAndTransactions(options *ExportBlocksAndTransactionsOptions) {
 	cli := tron.NewTronClient(options.ProviderURI)
 
 	blksCsvWriter := csv.NewWriter(options.blksOutput)

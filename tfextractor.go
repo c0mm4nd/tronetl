@@ -23,6 +23,7 @@ type Transfer struct {
 	Value        string `json:"value" csv:"value"`
 }
 
+// ExtractTransferFromLog is a helper to extract EVM smart contract token transfer from the event logs
 func ExtractTransferFromLog(logTopics []string, logData string, logContractAddress string, logIndex uint, logTxHash string, logBlockNum uint64) *Transfer {
 	// topics := log.Topics
 	if logTopics == nil || len(logTopics) < 1 {

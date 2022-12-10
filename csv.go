@@ -7,7 +7,7 @@ import (
 	"git.ngx.fi/c0mm4nd/tronetl/tron"
 )
 
-// CsvTransaction represents a tron tx, not trc10
+// CsvTransaction represents a tron tx csv output, not trc10
 // 1 TRX = 1000000 sun
 type CsvTransaction struct {
 	Hash             string `csv:"hash"`
@@ -36,6 +36,7 @@ type CsvTransaction struct {
 	ContractCallCount     int    `csv:"contract_calls"`
 }
 
+// NewCsvTransaction creates a new CsvTransaction
 func NewCsvTransaction(blockTimestamp uint64, txIndex int, jsontx *tron.JSONTransaction, httptx *tron.HTTPTransaction) *CsvTransaction {
 	to := ""
 	if jsontx.To != "" {
@@ -69,6 +70,7 @@ func NewCsvTransaction(blockTimestamp uint64, txIndex int, jsontx *tron.JSONTran
 	}
 }
 
+// CsvBlock represents a tron block output
 type CsvBlock struct {
 	Number           uint64 `csv:"number"`
 	Hash             string `csv:"hash"`
@@ -94,6 +96,7 @@ type CsvBlock struct {
 	WitnessSignature string `csv:"witness_signature"`
 }
 
+// NewCsvBlock creates a new CsvBlock
 func NewCsvBlock(jsonblock *tron.JSONBlockWithTxs, httpblock *tron.HTTPBlock) *CsvBlock {
 	return &CsvBlock{
 		Number:           uint64(*jsonblock.Number),
@@ -121,11 +124,12 @@ func NewCsvBlock(jsonblock *tron.JSONBlockWithTxs, httpblock *tron.HTTPBlock) *C
 	}
 }
 
-// trc10
+// CsvTRC10Transfer is a trc10 transfer output
 // https://developers.tron.network/docs/trc10-transfer-in-smart-contracts
 // https://tronprotocol.github.io/documentation-en/mechanism-algorithm/system-contracts/
-// TransferContract
-// TransferAssetContract
+// It represents:
+// - TransferContract
+// - TransferAssetContract
 type CsvTRC10Transfer struct {
 	BlockNumber       uint64 `csv:"block_number"`
 	BlockHash         string `csv:"block_hash"`
@@ -139,6 +143,7 @@ type CsvTRC10Transfer struct {
 	Value       string `csv:"value,omitempty"`
 }
 
+// NewCsvTRC10Transfer creates a new CsvTRC10Transfer
 func NewCsvTRC10Transfer(blockNum uint64, txIndex, callIndex int, httpTx *tron.HTTPTransaction, tfParams *tron.TRC10TransferParams) *CsvTRC10Transfer {
 
 	return &CsvTRC10Transfer{
@@ -155,6 +160,7 @@ func NewCsvTRC10Transfer(blockNum uint64, txIndex, callIndex int, httpTx *tron.H
 	}
 }
 
+// CsvLog is a EVM smart contract event log output
 type CsvLog struct {
 	BlockNumber     uint64 `json:"blockNumber" csv:"block_number"`
 	TransactionHash string `json:"transaction_hash" csv:"transaction_hash"`
@@ -165,6 +171,7 @@ type CsvLog struct {
 	Data    string `csv:"data"`
 }
 
+// NewCsvLog creates a new CsvLog
 func NewCsvLog(blockNumber uint64, txHash string, logIndex uint, log *tron.HTTPTxInfoLog) *CsvLog {
 	return &CsvLog{
 		BlockNumber:     blockNumber,
@@ -177,6 +184,7 @@ func NewCsvLog(blockNumber uint64, txHash string, logIndex uint, log *tron.HTTPT
 	}
 }
 
+// CsvInternalTx is a EVM smart contract internal transaction
 type CsvInternalTx struct {
 	TransactionHash   string `json:"transaction_hash"`
 	Index             uint   `json:"internal_index"`
@@ -187,6 +195,7 @@ type CsvInternalTx struct {
 	Rejected          bool   `json:"rejected"`
 }
 
+// NewCsvInternalTx creates a new CsvInternalTx
 func NewCsvInternalTx(index uint, itx *tron.HTTPInternalTransaction) *CsvInternalTx {
 	callValues := make([]string, len(itx.CallValueInfo))
 	for i, callValue := range itx.CallValueInfo {

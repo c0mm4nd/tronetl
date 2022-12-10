@@ -64,7 +64,7 @@ func main() {
 				chk(err)
 			}
 
-			exportBlocksAndTransactions(&ExportBlocksAndTransactionsOptions{
+			ExportBlocksAndTransactions(&ExportBlocksAndTransactionsOptions{
 				blksOutput:  blksOut,
 				txsOutput:   txsOut,
 				trc10Output: trc10Out,
@@ -107,7 +107,7 @@ func main() {
 				chk(err)
 			}
 
-			exportTransfers(&ExportTransferOptions{
+			ExportTransfers(&ExportTransferOptions{
 				tfOutput:         tfOut,
 				logOutput:        logOut,
 				internalTxOutput: internalTxOut,
@@ -166,7 +166,7 @@ func main() {
 					WithTRXTransactions: txsOut != nil,   // TODO
 					WithTRC10Transfers:  trc10Out != nil, // TODO
 				}
-				exportBlocksAndTransactions(options)
+				ExportBlocksAndTransactions(options)
 
 				ctx.Header("Content-Disposition", "attachment;filename=export.zip")
 				ctx.Data(http.StatusOK, "application/zip", zipBuffer.Bytes())
@@ -191,7 +191,7 @@ func main() {
 					EndTimestamp:     tryStr2Uint(ctx.Query("end-timestamp")),
 					Contracts:        ctx.QueryArray("contracts"),
 				}
-				exportTransfers(options)
+				ExportTransfers(options)
 
 				ctx.Header("Content-Disposition", "attachment;filename=export.zip")
 				ctx.Data(http.StatusOK, "application/zip", zipBuffer.Bytes())

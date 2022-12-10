@@ -29,7 +29,8 @@ type ExportTransferOptions struct {
 	Contracts []string `json:"contracts,omitempty"`
 }
 
-func exportTransfers(options *ExportTransferOptions) {
+// ExportTransfers is the main func for handling export_transfers command
+func ExportTransfers(options *ExportTransferOptions) {
 	cli := tron.NewTronClient(options.ProviderURI)
 
 	tfWriter := csv.NewWriter(options.tfOutput)

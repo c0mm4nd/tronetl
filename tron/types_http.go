@@ -5,7 +5,8 @@ import (
 	"math/big"
 )
 
-// follow https://github.com/tronprotocol/protocol/blob/2351aa6c2d708bf5ef47baf70410b3bc87d65fa7/core/Tron.proto#L341
+// HTTPTxInfo is a TxInfo result from HTTP RESTful API
+// the struct follows https://github.com/tronprotocol/protocol/blob/2351aa6c2d708bf5ef47baf70410b3bc87d65fa7/core/Tron.proto#L341
 type HTTPTxInfo struct {
 	ID              string   `json:"id"`
 	Fee             int      `json:"fee,omitempty"`
@@ -36,12 +37,14 @@ type HTTPTxInfo struct {
 	ShieldedTransactionFee        int64                      `json:"shielded_transaction_fee,omitempty"`
 }
 
+// HTTPTxInfoLog is a Log result from HTTP RESTful API
 type HTTPTxInfoLog struct {
 	Address string   `json:"address"`
 	Topics  []string `json:"topics"`
 	Data    string   `json:"data"`
 }
 
+// HTTPInternalTransaction is a internal transaction result from HTTP RESTful API
 type HTTPInternalTransaction struct {
 	TransactionHash   string                                  `json:"hash"`
 	CallerAddress     string                                  `json:"caller_address"`
@@ -51,12 +54,14 @@ type HTTPInternalTransaction struct {
 	Rejected          bool                                    `json:"rejected"`
 }
 
+// HTTPInternalTransactionCallValueInfo is a field in HTTPInternalTransaction
 // https://github.com/tronprotocol/protocol/blob/2351aa6c2d708bf5ef47baf70410b3bc87d65fa7/core/Tron.proto#L509
 type HTTPInternalTransactionCallValueInfo struct {
 	CallValue int64  `json:"callValue,omitempty"`
 	TokenID   string `json:"tokenId,omitempty"`
 }
 
+// HTTPInternalTransaction is a Block result from HTTP RESTful API
 // https://github.com/tronprotocol/protocol/blob/2351aa6c2d708bf5ef47baf70410b3bc87d65fa7/core/Tron.proto#L406
 type HTTPBlock struct {
 	BlockID      string            `json:"blockID"`
@@ -64,6 +69,7 @@ type HTTPBlock struct {
 	Transactions []HTTPTransaction `json:"transactions"`
 }
 
+// HTTPBlockHeader represents the block header from the Block result from HTTP RESTful API
 type HTTPBlockHeader struct {
 	RawData struct {
 		Timestamp  int64  `json:"timestamp,omitempty"`
@@ -78,10 +84,7 @@ type HTTPBlockHeader struct {
 	WitnessSignature string `json:"witness_signature"`
 }
 
-// Values: https://tronprotocol.github.io/documentation-en/mechanism-algorithm/system-contracts/
-// TransferAssetContract
-// TriggerSmartContract
-// TransferContract
+// HTTPTransaction represents the Transaction result from HTTP RESTful API
 type HTTPTransaction struct {
 	Ret []struct {
 		ContractRet string `json:"contractRet"`
@@ -100,6 +103,8 @@ type HTTPTransaction struct {
 	RawDataHex string `json:"raw_data_hex"`
 }
 
+// ContractCall represents a tron native contract call inside the Transaction
+// Details of Parameter in https://tronprotocol.github.io/documentation-en/mechanism-algorithm/system-contracts/
 type ContractCall struct {
 	ContractType string `json:"type"`
 	Parameter    struct {
@@ -110,6 +115,9 @@ type ContractCall struct {
 	PermissionID int32  `json:"Permission_id"`
 }
 
+// TRC10TransferParams can be the params of the following calls:
+// - TransferAssetContract
+// - TransferContract
 type TRC10TransferParams struct {
 	AssetName    string   `json:"asset_name"`
 	Amount       *big.Int `json:"amount"`
