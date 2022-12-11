@@ -138,9 +138,9 @@ type CsvTRC10Transfer struct {
 	ContractCallIndex int    `csv:"contract_call_index"`
 
 	AssetName   string `csv:"asset_name"` // do not omit => empty means trx
-	FromAddress string `csv:"from_address,omitempty"`
-	ToAddress   string `csv:"to_address,omitempty"`
-	Value       string `csv:"value,omitempty"`
+	FromAddress string `csv:"from_address"`
+	ToAddress   string `csv:"to_address"`
+	Value       string `csv:"value"`
 }
 
 // NewCsvTRC10Transfer creates a new CsvTRC10Transfer
@@ -186,13 +186,13 @@ func NewCsvLog(blockNumber uint64, txHash string, logIndex uint, log *tron.HTTPT
 
 // CsvInternalTx is a EVM smart contract internal transaction
 type CsvInternalTx struct {
-	TransactionHash   string `json:"transaction_hash"`
-	Index             uint   `json:"internal_index"`
-	CallerAddress     string `json:"caller_address"`
-	TransferToAddress string `json:"transferTo_address"`
-	CallValueInfo     string `json:"callValueInfo,omitempty"`
-	Note              string `json:"note"`
-	Rejected          bool   `json:"rejected"`
+	TransactionHash   string `csv:"transaction_hash"`
+	Index             uint   `csv:"internal_index"`
+	CallerAddress     string `csv:"caller_address"`
+	TransferToAddress string `csv:"transferTo_address"`
+	CallValueInfo     string `csv:"callValueInfo"`
+	Note              string `csv:"note"`
+	Rejected          bool   `csv:"rejected"`
 }
 
 // NewCsvInternalTx creates a new CsvInternalTx
