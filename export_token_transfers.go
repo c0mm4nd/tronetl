@@ -37,11 +37,11 @@ func ExportTransfers(options *ExportTransferOptions) {
 	defer tfWriter.Flush()
 	tfEncoder := csvutil.NewEncoder(tfWriter)
 
-	logWriter := csv.NewWriter(options.tfOutput)
+	logWriter := csv.NewWriter(options.logOutput)
 	defer logWriter.Flush()
 	logEncoder := csvutil.NewEncoder(logWriter)
 
-	internalTxWriter := csv.NewWriter(options.tfOutput)
+	internalTxWriter := csv.NewWriter(options.internalTxOutput)
 	defer internalTxWriter.Flush()
 	internalTxEncoder := csvutil.NewEncoder(internalTxWriter)
 
