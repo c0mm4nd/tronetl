@@ -97,13 +97,13 @@ func main() {
 
 			var logOut *os.File
 			if *txsOutput != "-" {
-				tfOut, err = os.Create(*logOutput)
+				logOut, err = os.Create(*logOutput)
 				chk(err)
 			}
 
 			var internalTxOut *os.File
 			if *txsOutput != "-" {
-				tfOut, err = os.Create(*internalTxOutput)
+				internalTxOut, err = os.Create(*internalTxOutput)
 				chk(err)
 			}
 
