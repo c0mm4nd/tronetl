@@ -76,9 +76,6 @@ func main() {
 
 				StartTimestamp: *startTimestamp,
 				EndTimestamp:   *endTimestamp,
-
-				WithTRXTransactions: txsOut != nil,
-				WithTRC10Transfers:  trc10Out != nil,
 			})
 		},
 	}
@@ -162,9 +159,6 @@ func main() {
 					EndBlock:       tryStr2Uint(ctx.Query("end-block")),
 					StartTimestamp: tryStr2Uint(ctx.Query("start-timestamp")),
 					EndTimestamp:   tryStr2Uint(ctx.Query("end-timestamp")),
-
-					WithTRXTransactions: txsOut != nil,   // TODO
-					WithTRC10Transfers:  trc10Out != nil, // TODO
 				}
 				ExportBlocksAndTransactions(options)
 

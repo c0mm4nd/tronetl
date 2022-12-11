@@ -40,7 +40,7 @@ type CsvTransaction struct {
 func NewCsvTransaction(blockTimestamp uint64, txIndex int, jsontx *tron.JSONTransaction, httptx *tron.HTTPTransaction) *CsvTransaction {
 	to := ""
 	if jsontx.To != "" {
-		to = hex2TAddr(jsontx.To[2:])
+		to = Hex2TAddr(jsontx.To[2:])
 	}
 
 	return &CsvTransaction{
@@ -49,7 +49,7 @@ func NewCsvTransaction(blockTimestamp uint64, txIndex int, jsontx *tron.JSONTran
 		BlockHash:            jsontx.BlockHash[2:],
 		BlockNumber:          uint64(*jsontx.BlockNumber),
 		TransactionIndex:     txIndex,
-		FromAddress:          hex2TAddr(jsontx.From[2:]),
+		FromAddress:          Hex2TAddr(jsontx.From[2:]),
 		ToAddress:            to,
 		Value:                jsontx.Value.String(),
 		Gas:                  jsontx.Gas.String(),
@@ -108,7 +108,7 @@ func NewCsvBlock(jsonblock *tron.JSONBlockWithTxs, httpblock *tron.HTTPBlock) *C
 		TransactionsRoot: jsonblock.TransactionsRoot[2:],
 		StateRoot:        jsonblock.StateRoot[2:],
 		ReceiptsRoot:     "",                             // block.ReceiptsRoot
-		Miner:            hex2TAddr(jsonblock.Miner[2:]), // = WitnessAddress
+		Miner:            Hex2TAddr(jsonblock.Miner[2:]), // = WitnessAddress
 		Difficulty:       "",
 		TotalDifficulty:  "",
 		Size:             uint64(*jsonblock.Size),
@@ -154,8 +154,8 @@ func NewCsvTRC10Transfer(blockNum uint64, txIndex, callIndex int, httpTx *tron.H
 		ContractCallIndex: callIndex,
 
 		AssetName:   tfParams.AssetName,
-		FromAddress: hex2TAddr(tfParams.OwnerAddress),
-		ToAddress:   hex2TAddr(tfParams.ToAddress),
+		FromAddress: Hex2TAddr(tfParams.OwnerAddress),
+		ToAddress:   Hex2TAddr(tfParams.ToAddress),
 		Value:       tfParams.Amount.String(),
 	}
 }
@@ -178,7 +178,7 @@ func NewCsvLog(blockNumber uint64, txHash string, logIndex uint, log *tron.HTTPT
 		TransactionHash: txHash,
 		LogIndex:        logIndex,
 
-		Address: hex2TAddr(log.Address),
+		Address: Hex2TAddr(log.Address),
 		Topics:  strings.Join(log.Topics, ";"),
 		Data:    log.Data,
 	}
@@ -205,8 +205,8 @@ func NewCsvInternalTx(index uint, itx *tron.HTTPInternalTransaction) *CsvInterna
 	return &CsvInternalTx{
 		TransactionHash:   itx.TransactionHash,
 		Index:             index,
-		CallerAddress:     hex2TAddr(itx.CallerAddress),
-		TransferToAddress: hex2TAddr(itx.TransferToAddress),
+		CallerAddress:     Hex2TAddr(itx.CallerAddress),
+		TransferToAddress: Hex2TAddr(itx.TransferToAddress),
 		CallValueInfo:     strings.Join(callValues, ";"),
 		Note:              itx.Note,
 		Rejected:          itx.Rejected,

@@ -47,7 +47,7 @@ func ExtractTransferFromLog(logTopics []string, logData string, logContractAddre
 
 	return &Transfer{
 		BlockNumber:     logBlockNum,
-		TokenAddress:    hex2TAddr(logContractAddress),
+		TokenAddress:    Hex2TAddr(logContractAddress),
 		FromAddress:     hash2Addr(topics_with_data[1]),
 		ToAddress:       hash2Addr(topics_with_data[2]),
 		Value:           value.String(),
@@ -72,14 +72,16 @@ func hash2Addr(hash string) string {
 	}
 	// addr := common.Address{}
 	// copy(addr[:], )
-	return hex2TAddr(hash[12*2:])
+	return Hex2TAddr(hash[12*2:])
 }
 
-func hex2TAddr(hexStr string) string {
+// Hex2TAddr converts a (unknwon) Hex to TAddr
+func Hex2TAddr(hexStr string) string {
 	if hexStr[0] == 'T' {
 		log.Printf("Taddr %s input as a hex?", hexStr)
 		return hexStr
 	}
+
 	if len(hexStr) == 20*2 {
 		hexStr = "41" + hexStr
 	}
@@ -95,5 +97,16 @@ func hex2TAddr(hexStr string) string {
 		return base58.Encode(addrBytes)
 	}
 
-	panic("not a no-prefix hex addr")
+	panic(hexStr + "is not a no-prefix hex addr")
+}
+
+// Tstring2HexAddr converts a T-string to Hex addr
+func Tstring2HexAddr(theTstr string) string {
+	if theTstr[0] != 'T' {
+		panic(theTstr + " is not a TAddr")
+	}
+
+	bs58decoded := base58.Decode(theTstr)
+	withoutSum := bs58decoded[:21]
+	return hex.EncodeToString(withoutSum)
 }

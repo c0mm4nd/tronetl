@@ -24,30 +24,29 @@ type ExportBlocksAndTransactionsOptions struct {
 	// extension
 	StartTimestamp uint64 `json:"start_timestamp,omitempty"`
 	EndTimestamp   uint64 `json:"end_timestamp,omitempty"`
-
-	WithTRXTransactions bool
-	WithTRC10Transfers  bool
 }
 
 // ExportBlocksAndTransactions is the main func for handling export_blocks_and_transactions command
 func ExportBlocksAndTransactions(options *ExportBlocksAndTransactionsOptions) {
 	cli := tron.NewTronClient(options.ProviderURI)
 
-	blksCsvWriter := csv.NewWriter(options.blksOutput)
-	defer blksCsvWriter.Flush()
-	blksCsvEncoder := csvutil.NewEncoder(blksCsvWriter)
+	var blksCsvEncoder, txsCsvEncoder, trc10CsvEncoder *csvutil.Encoder
+	if options.blksOutput != nil {
+		blksCsvWriter := csv.NewWriter(options.blksOutput)
+		defer blksCsvWriter.Flush()
+		blksCsvEncoder = csvutil.NewEncoder(blksCsvWriter)
+	}
 
-	var txsCsvEncoder, trc10CsvEncoder *csvutil.Encoder
-	if options.WithTRXTransactions {
+	if options.txsOutput != nil {
 		txsCsvWriter := csv.NewWriter(options.txsOutput)
 		defer txsCsvWriter.Flush()
 		txsCsvEncoder = csvutil.NewEncoder(txsCsvWriter)
+	}
 
-		if options.WithTRC10Transfers {
-			trc10CsvWriter := csv.NewWriter(options.trc10Output)
-			defer trc10CsvWriter.Flush()
-			trc10CsvEncoder = csvutil.NewEncoder(trc10CsvWriter)
-		}
+	if options.trc10Output != nil {
+		trc10CsvWriter := csv.NewWriter(options.trc10Output)
+		defer trc10CsvWriter.Flush()
+		trc10CsvEncoder = csvutil.NewEncoder(trc10CsvWriter)
 	}
 
 	for number := options.StartBlock; number <= options.EndBlock; number++ {
@@ -56,14 +55,16 @@ func ExportBlocksAndTransactions(options *ExportBlocksAndTransactionsOptions) {
 		jsonblock := cli.GetJSONBlockByNumberWithTxs(num)
 		httpblock := cli.GetHTTPBlockByNumber(num)
 		csvBlock := NewCsvBlock(jsonblock, httpblock)
-		if options.WithTRXTransactions {
+		if options.txsOutput != nil || options.trc10Output != nil {
 			for txIndex, jsontx := range jsonblock.Transactions {
 				httptx := httpblock.Transactions[txIndex]
-				csvTx := NewCsvTransaction(uint64(*jsonblock.Timestamp), txIndex, &jsontx, &httptx)
-				err := txsCsvEncoder.Encode(csvTx)
-				chk(err)
+				if options.txsOutput != nil {
+					csvTx := NewCsvTransaction(uint64(*jsonblock.Timestamp), txIndex, &jsontx, &httptx)
+					err := txsCsvEncoder.Encode(csvTx)
+					chk(err)
+				}
 
-				if options.WithTRC10Transfers {
+				if options.trc10Output != nil {
 					for callIndex, contractCall := range httptx.RawData.Contract {
 						if contractCall.ContractType == "TransferAssetContract" ||
 							contractCall.ContractType == "TransferContract" {

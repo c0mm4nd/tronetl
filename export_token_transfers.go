@@ -45,6 +45,11 @@ func ExportTransfers(options *ExportTransferOptions) {
 	defer internalTxWriter.Flush()
 	internalTxEncoder := csvutil.NewEncoder(internalTxWriter)
 
+	filterLogContracts := make([]string, len(options.Contracts))
+	for i, addr := range options.Contracts {
+		filterLogContracts[i] = Tstring2HexAddr(addr)[2:] // hex addr with 41 prefix
+	}
+
 	if options.StartTimestamp != 0 {
 		// fast locate estimate start height
 
@@ -97,24 +102,32 @@ func ExportTransfers(options *ExportTransferOptions) {
 			for _, txInfo := range txInfos {
 				txHash := txInfo.ID
 				for logIndex, log := range txInfo.Log {
-					if len(options.Contracts) != 0 && !slices.Contains(options.Contracts, hex2TAddr(log.Address)) {
+					if len(filterLogContracts) != 0 && !slices.Contains(filterLogContracts, log.Address) {
 						continue
 					}
 
-					tf := ExtractTransferFromLog(log.Topics, log.Data, log.Address, uint(logIndex), txHash, number)
-					if tf != nil {
-						err := tfEncoder.Encode(tf)
+					if options.tfOutput != nil {
+						tf := ExtractTransferFromLog(log.Topics, log.Data, log.Address, uint(logIndex), txHash, number)
+						if tf != nil {
+							err := tfEncoder.Encode(tf)
+							chk(err)
+						}
+					}
+
+					if options.logOutput != nil {
+						err := logEncoder.Encode(NewCsvLog(number, txHash, uint(logIndex), log))
 						chk(err)
 					}
 
-					err := logEncoder.Encode(NewCsvLog(number, txHash, uint(logIndex), log))
-					chk(err)
 				}
 
-				for internalIndex, internalTx := range txInfo.InternalTransactions {
-					err := internalTxEncoder.Encode(NewCsvInternalTx(uint(internalIndex), internalTx))
-					chk(err)
+				if options.internalTxOutput != nil {
+					for internalIndex, internalTx := range txInfo.InternalTransactions {
+						err := internalTxEncoder.Encode(NewCsvInternalTx(uint(internalIndex), internalTx))
+						chk(err)
+					}
 				}
+
 			}
 
 			log.Printf("parsed block %d", number)
