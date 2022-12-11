@@ -80,16 +80,20 @@ func hex2TAddr(hexStr string) string {
 		log.Printf("Taddr %s input as a hex?", hexStr)
 		return hexStr
 	}
-	if len(hexStr) != 20*2 {
-		panic("not a no-prefix hex addr")
+	if len(hexStr) == 20*2 {
+		hexStr = "41" + hexStr
 	}
-	addrBytes, err := hex.DecodeString(hexStr)
-	addrBytes = append([]byte{0x41}, addrBytes...)
-	chk(err)
-	sum0 := sha256.Sum256(addrBytes)
-	sum1 := sha256.Sum256(sum0[:])
-	chksum := sum1[0:4]
-	addrBytes = append(addrBytes, chksum...)
 
-	return base58.Encode(addrBytes)
+	if len(hexStr) == 21*2 {
+		addrBytes, err := hex.DecodeString(hexStr)
+		chk(err)
+		sum0 := sha256.Sum256(addrBytes)
+		sum1 := sha256.Sum256(sum0[:])
+		chksum := sum1[0:4]
+		addrBytes = append(addrBytes, chksum...)
+
+		return base58.Encode(addrBytes)
+	}
+
+	panic("not a no-prefix hex addr")
 }
