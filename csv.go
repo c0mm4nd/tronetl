@@ -219,7 +219,11 @@ func NewCsvInternalTx(index uint, itx *tron.HTTPInternalTransaction, callInfoInd
 
 // CsvReceipt is a receipt for tron transaction
 type CsvReceipt struct {
-	TxHash            string `csv:"transaction_hash"`
+	TxHash  string `csv:"transaction_hash"`
+	TxIndex uint   `csv:"transaction_index"`
+	// BlockHash         string `csv:"block_hash"` // cannot get this
+	BlockNumber       uint64 `csv:"block_number"`
+	ContractAddress   string `csv:"contract_address"`
 	EnergyUsage       int64  `csv:"energy_usage,omitempty"`
 	EnergyFee         int64  `csv:"energy_fee,omitempty"`
 	OriginEnergyUsage int64  `csv:"origin_energy_usage,omitempty"`
@@ -229,10 +233,14 @@ type CsvReceipt struct {
 	Result            string `csv:"result"`
 }
 
-func NewCsvReceipt(txHash string, r *tron.HTTPReceipt) *CsvReceipt {
+func NewCsvReceipt(blockNum uint64, txHash string, txIndex uint, contractAddr string, r *tron.HTTPReceipt) *CsvReceipt {
 
 	return &CsvReceipt{
-		TxHash:            txHash,
+		TxHash:  txHash,
+		TxIndex: txIndex,
+		// BlockHash:         blockHash,
+		BlockNumber:       blockNum,
+		ContractAddress:   contractAddr,
 		EnergyUsage:       r.EnergyUsage,
 		EnergyFee:         r.EnergyFee,
 		OriginEnergyUsage: r.OriginEnergyUsage,

@@ -108,7 +108,7 @@ TRC10交易数据结构如下，源自 `TransferAssetContract` 和 `TransferCont
 
 ---
 
-## 日志.csv
+## logs.csv
 
 日志数据结构如下：
 
@@ -123,7 +123,7 @@ TRC10交易数据结构如下，源自 `TransferAssetContract` 和 `TransferCont
 
 ---
 
-## 内部交易.csv
+## internal_transactions.csv
 
 txinfo内部交易数据结构如下：
 

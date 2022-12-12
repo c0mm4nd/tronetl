@@ -103,11 +103,11 @@ func ExportTransfers(options *ExportTransferOptions) {
 	if options.StartBlock != 0 && options.EndBlock != 0 {
 		for number := options.StartBlock; number <= options.EndBlock; number++ {
 			txInfos := cli.GetTxInfosByNumber(number)
-			for _, txInfo := range txInfos {
+			for txIndex, txInfo := range txInfos {
 				txHash := txInfo.ID
 
 				if options.receiptOutput != nil {
-					receiptEncoder.Encode(NewCsvReceipt(txHash, txInfo.Receipt))
+					receiptEncoder.Encode(NewCsvReceipt(number, txHash, uint(txIndex), txInfo.ContractAddress, txInfo.Receipt))
 				}
 
 				for logIndex, log := range txInfo.Log {

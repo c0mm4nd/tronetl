@@ -62,11 +62,11 @@ The TRX transaction data structure is as follows, here it mainly follows the tra
 
 Increase:
 
-| Column                 | Type                                    |
-| ---------------------- | --------------------------------------- |
-| transaction_timestamp  | uint64, unit is ms                      |
-| transaction_expiration | uint64, the unit is ms                  |
-| fee_limit              | bigint                                  |
+| Column                 | Type                   |
+| ---------------------- | ---------------------- |
+| transaction_timestamp  | uint64, unit is ms     |
+| transaction_expiration | uint64, the unit is ms |
+| fee_limit              | bigint                 |
 
 
 For details about event types, please refer to the [system-contracts chapter in the official document](https://tronprotocol.github.io/documentation-en/mechanism-algorithm/system-contracts/), and functions can be added later as needed.
@@ -139,6 +139,25 @@ The txinfo's internal transaction data structure is as follows:
 | call_value         | int64, the amount of the transfered token |
 | note               | hex_string                                |
 | rejected           | bool                                      |
+
+---
+
+## receipts.csv
+
+The tx receipt data structure is as follows:
+
+| Column              | Type                                                   |
+| ------------------- | ------------------------------------------------------ |
+| transaction_hash    | hex_string                                             |
+| transaction_index   | uint                                                   |
+| block_number        | hex_string                                             |
+| contract_address    | address (the called one, not newly created one as eth) |
+| energy_fee          | int64                                                  |
+| origin_energy_usage | int64                                                  |
+| energy_usage_total  | int64                                                  |
+| net_usage           | int64                                                  |
+| net_fee             | int64                                                  |
+| result              | string                                                 |
 
 ---
 
