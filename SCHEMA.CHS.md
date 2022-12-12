@@ -41,39 +41,40 @@
 
 常规交易数据结构如下，此处主要遵循java-tron中rpc接口区块自带交易数据
 
-| Column                   | Type       |
-| ------------------------ | ---------- |
-| hash                     | hex_string |
-| nonce                    | bigint     |
-| block_hash               | hex_string |
-| block_number             | bigint     |
-| transaction_index        | bigint     |
-| from_address             | address    |
-| to_address               | address    |
-| value                    | numeric    |
-| gas                      | bigint     |
-| gas_price                | bigint     |
-| input                    | hex_string |
-| block_timestamp          | bigint     |
-| max_fee_per_gas          | bigint     |
-| max_priority_fee_per_gas | bigint     |
-| transaction_type         | bigint     |
+| Column                   | Type                      |
+| ------------------------ | ------------------------- |
+| hash                     | hex_string                |
+| nonce                    | 空                        |
+| block_hash               | hex_string                |
+| block_number             | uint64                    |
+| transaction_index        | uint                      |
+| from_address             | address                   |
+| to_address               | address                   |
+| value                    | bigint                    |
+| gas                      | bigint, = Energy Consumed |
+| gas_price                | bigint, 无意义            |
+| input                    | hex_string                |
+| block_timestamp          | uint64, 单位为秒          |
+| max_fee_per_gas          | 空                        |
+| max_priority_fee_per_gas | 空                        |
+| transaction_type         | string, 参考事件类型      |
 
 增加：
 
-| Column                 | Type                |
-| ---------------------- | ------------------- |
-| transaction_timestamp  | uint64，单位为ms    |
-| transaction_expiration | uint64，单位为ms    |
-| fee_limit              | bigint              |
-| contract_calls         | int, 合约调用事件数 |
+| Column                 | Type             |
+| ---------------------- | ---------------- |
+| transaction_timestamp  | uint64，单位为秒 |
+| transaction_expiration | uint64，单位为秒 |
+| fee_limit              | bigint           |
 
+
+事件类型详见[官方文档中system-contracts章节](https://tronprotocol.github.io/documentation-en/mechanism-algorithm/system-contracts/)，后续根据需要可增加功能。
 
 ---
 
 ## trc10.csv
 
-TRC10交易数据结构如下，也可以视为以太坊中的traces：
+TRC10交易数据结构如下，源自 `TransferAssetContract` 和 `TransferContract`事件：
 
 | Column              | Type       |
 | ------------------- | ---------- |
@@ -87,8 +88,6 @@ TRC10交易数据结构如下，也可以视为以太坊中的traces：
 | to_address          | address    |
 | value               | bigint     |
 
-
-trc10交易以外事件类型详见[官方文档中system-contracts章节](https://tronprotocol.github.io/documentation-en/mechanism-algorithm/system-contracts/)，后续根据需要可增加功能。
 
 ---
 
@@ -128,17 +127,17 @@ trc10交易以外事件类型详见[官方文档中system-contracts章节](https
 
 txinfo内部交易数据结构如下：
 
-| Column             | Type                      |
-| ------------------ | ------------------------- |
-| transaction_hash   | uint64                    |
-| internal_index     | uint                      |
-| caller_address     | address                   |
-| transferTo_address | address                   |
-| call_info_index    | uint, 合约调用的索引      |
-| call_token_id      | uint, 合约调用中的代币ID  |
-| call_value         | int64, 合约调用的代币数量 |
-| note               | hex_string                |
-| rejected           | bool                      |
+| Column             | Type                                 |
+| ------------------ | ------------------------------------ |
+| transaction_hash   | uint64                               |
+| internal_index     | uint                                 |
+| caller_address     | address                              |
+| transferTo_address | address                              |
+| call_info_index    | uint, 合约调用的索引                 |
+| call_token_id      | uint, 合约调用中的代币ID (TRX时为空) |
+| call_value         | int64, 合约调用的代币数量            |
+| note               | hex_string                           |
+| rejected           | bool                                 |
 
 ---
 

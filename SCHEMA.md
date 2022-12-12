@@ -42,23 +42,23 @@ Increase:
 
 The TRX transaction data structure is as follows, here it mainly follows the transaction data that comes with the rpc interface block in java-tron
 
-| Column                   | Type       |
-| ------------------------ | ---------- |
-| hash                     | hex_string |
-| nonce                    | bigint     |
-| block_hash               | hex_string |
-| block_number             | bigint     |
-| transaction_index        | bigint     |
-| from_address             | address    |
-| to_address               | address    |
-| value                    | numeric    |
-| gas                      | bigint     |
-| gas_price                | bigint     |
-| input                    | hex_string |
-| block_timestamp          | bigint     |
-| max_fee_per_gas          | bigint     |
-| max_priority_fee_per_gas | bigint     |
-| transaction_type         | bigint     |
+| Column                   | Type                             |
+| ------------------------ | -------------------------------- |
+| hash                     | hex_string                       |
+| nonce                    | always empty                     |
+| block_hash               | hex_string                       |
+| block_number             | uint64                           |
+| transaction_index        | uint                             |
+| from_address             | address                          |
+| to_address               | address                          |
+| value                    | bigint                           |
+| gas                      | bigint, = Energy Consumed        |
+| gas_price                | bigint, meaningless              |
+| input                    | hex_string                       |
+| block_timestamp          | timestamp in second              |
+| max_fee_per_gas          | always empty                     |
+| max_priority_fee_per_gas | always empty                     |
+| transaction_type         | string, refer to the event types |
 
 Increase:
 
@@ -67,14 +67,15 @@ Increase:
 | transaction_timestamp  | uint64, unit is ms                      |
 | transaction_expiration | uint64, the unit is ms                  |
 | fee_limit              | bigint                                  |
-| contract_calls         | int, the number of contract call events |
 
+
+For details about event types, please refer to the [system-contracts chapter in the official document](https://tronprotocol.github.io/documentation-en/mechanism-algorithm/system-contracts/), and functions can be added later as needed.
 
 ---
 
 ## trc10.csv
 
-The TRC10 transaction data structure is as follows, which can also be regarded as traces in Ethereum:
+The TRC10 transaction data structure (from `TransferAssetContract` and `TransferContract` events) is as follows:
 
 | Column              | Type       |
 | ------------------- | ---------- |
@@ -88,8 +89,6 @@ The TRC10 transaction data structure is as follows, which can also be regarded a
 | to_address          | address    |
 | value               | bigint     |
 
-
-For details about event types other than trc10 transactions, please refer to the [system-contracts chapter in the official document](https://tronprotocol.github.io/documentation-en/mechanism-algorithm/system-contracts/), and functions can be added later as needed.
 
 ---
 
@@ -136,7 +135,7 @@ The txinfo's internal transaction data structure is as follows:
 | caller_address     | address                                   |
 | transferTo_address | address                                   |
 | call_info_index    | uint, index of the call info              |
-| call_token_id      | uint, token id                            |
+| call_token_id      | uint, token id (empty means TRX)          |
 | call_value         | int64, the amount of the transfered token |
 | note               | hex_string                                |
 | rejected           | bool                                      |

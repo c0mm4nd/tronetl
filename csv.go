@@ -33,7 +33,6 @@ type CsvTransaction struct {
 	TransactionTimestamp  uint64 `csv:"transaction_timestamp"`
 	TransactionExpiration uint64 `csv:"transaction_expiration"`
 	FeeLimit              uint64 `csv:"fee_limit"`
-	ContractCallCount     int    `csv:"contract_calls"`
 }
 
 // NewCsvTransaction creates a new CsvTransaction
@@ -41,6 +40,11 @@ func NewCsvTransaction(blockTimestamp uint64, txIndex int, jsontx *tron.JSONTran
 	to := ""
 	if jsontx.To != "" {
 		to = Hex2TAddr(jsontx.To[2:])
+	}
+
+	txType := "Unknown"
+	if len(httptx.RawData.Contract) > 0 {
+		txType = httptx.RawData.Contract[0].ContractType
 	}
 
 	return &CsvTransaction{
@@ -51,22 +55,21 @@ func NewCsvTransaction(blockTimestamp uint64, txIndex int, jsontx *tron.JSONTran
 		TransactionIndex:     txIndex,
 		FromAddress:          Hex2TAddr(jsontx.From[2:]),
 		ToAddress:            to,
-		Value:                jsontx.Value.String(),
-		Gas:                  jsontx.Gas.String(),
-		GasPrice:             jsontx.GasPrice.String(), // https://support.ledger.com/hc/en-us/articles/6331588714141-How-do-Tron-TRX-fees-work-?support=true
+		Value:                jsontx.Value.ToInt().String(),
+		Gas:                  jsontx.Gas.ToInt().String(),
+		GasPrice:             jsontx.GasPrice.ToInt().String(), // https://support.ledger.com/hc/en-us/articles/6331588714141-How-do-Tron-TRX-fees-work-?support=true
 		Input:                jsontx.Input[2:],
-		BlockTimestamp:       blockTimestamp,
-		MaxFeePerGas:         "", //tx.MaxFeePerGas.String(),
-		MaxPriorityFeePerGas: "", //tx.MaxPriorityFeePerGas.String(),
-		TransactionType:      jsontx.Type[2:],
+		BlockTimestamp:       blockTimestamp / 1000, // unit: sec
+		MaxFeePerGas:         "",                    //tx.MaxFeePerGas.String(),
+		MaxPriorityFeePerGas: "",                    //tx.MaxPriorityFeePerGas.String(),
+		TransactionType:      txType,                //jsontx.Type[2:],
 
-		Status: httptx.Ret[0].ContractRet,
+		Status: httptx.Ret[0].ContractRet, // can be SUCCESS REVERT
 
 		// appendix
-		TransactionTimestamp:  httptx.RawData.Timestamp,
-		TransactionExpiration: httptx.RawData.Expiration,
+		TransactionTimestamp:  httptx.RawData.Timestamp / 1000,  // float64(httptx.RawData.Timestamp) * 1 / 1000,
+		TransactionExpiration: httptx.RawData.Expiration / 1000, // float64(httptx.RawData.Expiration) * 1 / 1000,
 		FeeLimit:              httptx.RawData.FeeLimit,
-		ContractCallCount:     len(httptx.RawData.Contract),
 	}
 }
 
@@ -115,7 +118,7 @@ func NewCsvBlock(jsonblock *tron.JSONBlockWithTxs, httpblock *tron.HTTPBlock) *C
 		ExtraData:        "",
 		GasLimit:         jsonblock.GasLimit.ToInt().String(),
 		GasUsed:          jsonblock.GasUsed.ToInt().String(),
-		Timestamp:        uint64(*jsonblock.Timestamp),
+		Timestamp:        uint64(*jsonblock.Timestamp) / 1000,
 		TansactionCount:  len(jsonblock.Transactions),
 		BaseFeePerGas:    "", // block.BaseFeePerGas,
 
@@ -192,7 +195,7 @@ type CsvInternalTx struct {
 	TransferToAddress string `csv:"transferTo_address"`
 	CallInfoIndex     uint   `csv:"call_info_index"`
 	CallTokenID       string `csv:"call_token_id"`
-	CallValue         int64 `csv:"call_value"`
+	CallValue         int64  `csv:"call_value"`
 	Note              string `csv:"note"`
 	Rejected          bool   `csv:"rejected"`
 }
