@@ -40,6 +40,7 @@ func main() {
 	tfOutput := cmdTokenTf.String("transfers-output", "token_transfers.csv", "the CSV file for token transfer outputs, use - to omit")
 	logOutput := cmdTokenTf.String("logs-output", "logs.csv", "the CSV file for transaction log outputs, use - to omit")
 	internalTxOutput := cmdTokenTf.String("internal-tx-output", "internal_transactions.csv", "the CSV file for internal transaction outputs, use - to omit")
+	receiptOutput := cmdTokenTf.String("receipts-output", "receipts.csv", "the CSV file for transaction receipt outputs, use - to omit")
 	filterContracts := cmdTokenTf.StringArray("contracts", []string{}, "just output selected contracts' transfers")
 	cmdTokenTf.AddFlagSet(defaults)
 
@@ -104,10 +105,17 @@ func main() {
 				chk(err)
 			}
 
+			var receiptOut *os.File
+			if *receiptOutput != "-" {
+				receiptOut, err = os.Create(*receiptOutput)
+				chk(err)
+			}
+
 			ExportTransfers(&ExportTransferOptions{
 				tfOutput:         tfOut,
 				logOutput:        logOut,
 				internalTxOutput: internalTxOut,
+				receiptOutput:    receiptOut,
 
 				ProviderURI: *providerURI,
 				StartBlock:  *startBlock,

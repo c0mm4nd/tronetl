@@ -8,21 +8,13 @@ import (
 // HTTPTxInfo is a TxInfo result from HTTP RESTful API
 // the struct follows https://github.com/tronprotocol/protocol/blob/2351aa6c2d708bf5ef47baf70410b3bc87d65fa7/core/Tron.proto#L341
 type HTTPTxInfo struct {
-	ID              string   `json:"id"`
-	Fee             int      `json:"fee,omitempty"`
-	BlockNumber     int      `json:"blockNumber"`
-	BlockTimeStamp  int64    `json:"blockTimeStamp"`
-	ContractResult  []string `json:"contractResult"`
-	ContractAddress string   `json:"contract_address"`
-	Receipt         struct {
-		EnergyUsage       int64  `json:"energy_usage,omitempty"`
-		EnergyFee         int64  `json:"energy_fee,omitempty"`
-		OriginEnergyUsage int64  `json:"origin_energy_usage,omitempty"`
-		EnergyUsageTotal  int64  `json:"energy_usage_total,omitempty"`
-		NetUsage          int64  `json:"net_usage,omitempty"`
-		NetFee            int    `json:"net_fee,omitempty"`
-		Result            string `json:"result"`
-	} `json:"receipt"`
+	ID                            string                     `json:"id"`
+	Fee                           int                        `json:"fee,omitempty"`
+	BlockNumber                   int                        `json:"blockNumber"`
+	BlockTimeStamp                int64                      `json:"blockTimeStamp"`
+	ContractResult                []string                   `json:"contractResult"`
+	ContractAddress               string                     `json:"contract_address"`
+	Receipt                       *HTTPReceipt               `json:"receipt"`
 	Log                           []*HTTPTxInfoLog           `json:"log,omitempty"`
 	Result                        any                        `json:"result,omitempty"` // enum code { SUCESS = 0; FAILED = 1; }
 	ResMessage                    string                     `json:"resMessage,omitempty"`
@@ -35,6 +27,16 @@ type HTTPTxInfo struct {
 	ExchangeWithdrawAnotherAmount int64                      `json:"exchange_withdraw_another_amount,omitempty"`
 	ExchangeID                    int64                      `json:"exchange_id,omitempty"`
 	ShieldedTransactionFee        int64                      `json:"shielded_transaction_fee,omitempty"`
+}
+
+type HTTPReceipt struct {
+	EnergyUsage       int64  `json:"energy_usage,omitempty"`
+	EnergyFee         int64  `json:"energy_fee,omitempty"`
+	OriginEnergyUsage int64  `json:"origin_energy_usage,omitempty"`
+	EnergyUsageTotal  int64  `json:"energy_usage_total,omitempty"`
+	NetUsage          int64  `json:"net_usage,omitempty"`
+	NetFee            int64  `json:"net_fee,omitempty"`
+	Result            string `json:"result"`
 }
 
 // HTTPTxInfoLog is a Log result from HTTP RESTful API

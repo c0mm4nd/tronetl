@@ -16,7 +16,7 @@ type ExportTransferOptions struct {
 	tfOutput         io.Writer
 	logOutput        io.Writer
 	internalTxOutput io.Writer
-	// withBlockOutput io.Writer
+	receiptOutput    io.Writer
 
 	ProviderURI string `json:"provider_uri,omitempty"`
 	StartBlock  uint64 `json:"start_block,omitempty"`
@@ -44,6 +44,10 @@ func ExportTransfers(options *ExportTransferOptions) {
 	internalTxWriter := csv.NewWriter(options.internalTxOutput)
 	defer internalTxWriter.Flush()
 	internalTxEncoder := csvutil.NewEncoder(internalTxWriter)
+
+	receiptWriter := csv.NewWriter(options.receiptOutput)
+	defer internalTxWriter.Flush()
+	receiptEncoder := csvutil.NewEncoder(receiptWriter)
 
 	filterLogContracts := make([]string, len(options.Contracts))
 	for i, addr := range options.Contracts {
@@ -101,6 +105,11 @@ func ExportTransfers(options *ExportTransferOptions) {
 			txInfos := cli.GetTxInfosByNumber(number)
 			for _, txInfo := range txInfos {
 				txHash := txInfo.ID
+
+				if options.receiptOutput != nil {
+					receiptEncoder.Encode(NewCsvReceipt(txHash, txInfo.Receipt))
+				}
+
 				for logIndex, log := range txInfo.Log {
 					if len(filterLogContracts) != 0 && !slices.Contains(filterLogContracts, log.Address) {
 						continue

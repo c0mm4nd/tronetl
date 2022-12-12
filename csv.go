@@ -1,7 +1,6 @@
 package main
 
 import (
-	"strconv"
 	"strings"
 
 	"git.ngx.fi/c0mm4nd/tronetl/tron"
@@ -215,5 +214,31 @@ func NewCsvInternalTx(index uint, itx *tron.HTTPInternalTransaction, callInfoInd
 
 		Note:     itx.Note,
 		Rejected: itx.Rejected,
+	}
+}
+
+// CsvReceipt is a receipt for tron transaction
+type CsvReceipt struct {
+	TxHash            string `csv:"transaction_hash"`
+	EnergyUsage       int64  `csv:"energy_usage,omitempty"`
+	EnergyFee         int64  `csv:"energy_fee,omitempty"`
+	OriginEnergyUsage int64  `csv:"origin_energy_usage,omitempty"`
+	EnergyUsageTotal  int64  `csv:"energy_usage_total,omitempty"`
+	NetUsage          int64  `csv:"net_usage,omitempty"`
+	NetFee            int64  `csv:"net_fee,omitempty"`
+	Result            string `csv:"result"`
+}
+
+func NewCsvReceipt(txHash string, r *tron.HTTPReceipt) *CsvReceipt {
+
+	return &CsvReceipt{
+		TxHash:            txHash,
+		EnergyUsage:       r.EnergyUsage,
+		EnergyFee:         r.EnergyFee,
+		OriginEnergyUsage: r.OriginEnergyUsage,
+		EnergyUsageTotal:  r.EnergyUsageTotal,
+		NetUsage:          r.NetUsage,
+		NetFee:            r.NetFee,
+		Result:            r.Result,
 	}
 }
