@@ -190,13 +190,15 @@ type CsvInternalTx struct {
 	Index             uint   `csv:"internal_index"`
 	CallerAddress     string `csv:"caller_address"`
 	TransferToAddress string `csv:"transferTo_address"`
-	CallValueInfo     string `csv:"callValueInfo"`
+	CallInfoIndex     uint   `csv:"call_info_index"`
+	CallTokenID       string `csv:"call_token_id"`
+	CallValue         int64 `csv:"call_value"`
 	Note              string `csv:"note"`
 	Rejected          bool   `csv:"rejected"`
 }
 
 // NewCsvInternalTx creates a new CsvInternalTx
-func NewCsvInternalTx(index uint, itx *tron.HTTPInternalTransaction) *CsvInternalTx {
+func NewCsvInternalTx(index uint, itx *tron.HTTPInternalTransaction, callInfoIndex uint, tokenID string, value int64) *CsvInternalTx {
 	callValues := make([]string, len(itx.CallValueInfo))
 	for i, callValue := range itx.CallValueInfo {
 		callValues[i] = callValue.TokenID + ":" + strconv.FormatInt(callValue.CallValue, 10)
@@ -207,8 +209,12 @@ func NewCsvInternalTx(index uint, itx *tron.HTTPInternalTransaction) *CsvInterna
 		Index:             index,
 		CallerAddress:     Hex2TAddr(itx.CallerAddress),
 		TransferToAddress: Hex2TAddr(itx.TransferToAddress),
-		CallValueInfo:     strings.Join(callValues, ";"),
-		Note:              itx.Note,
-		Rejected:          itx.Rejected,
+		// CallValueInfo:     strings.Join(callValues, ";"),
+		CallInfoIndex: callInfoIndex,
+		CallTokenID:   tokenID,
+		CallValue:     value,
+
+		Note:     itx.Note,
+		Rejected: itx.Rejected,
 	}
 }
