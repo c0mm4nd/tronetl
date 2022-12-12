@@ -165,9 +165,9 @@ func NewCsvTRC10Transfer(blockNum uint64, txIndex, callIndex int, httpTx *tron.H
 
 // CsvLog is a EVM smart contract event log output
 type CsvLog struct {
-	BlockNumber     uint64 `json:"blockNumber" csv:"block_number"`
-	TransactionHash string `json:"transaction_hash" csv:"transaction_hash"`
-	LogIndex        uint   `json:"logIndex" csv:"log_index"`
+	BlockNumber     uint64 `csv:"blockNumber" csv:"block_number"`
+	TransactionHash string `csv:"transaction_hash" csv:"transaction_hash"`
+	LogIndex        uint   `csv:"logIndex" csv:"log_index"`
 
 	Address string `csv:"address"`
 	Topics  string `csv:"topics"`
@@ -202,10 +202,6 @@ type CsvInternalTx struct {
 
 // NewCsvInternalTx creates a new CsvInternalTx
 func NewCsvInternalTx(index uint, itx *tron.HTTPInternalTransaction, callInfoIndex uint, tokenID string, value int64) *CsvInternalTx {
-	callValues := make([]string, len(itx.CallValueInfo))
-	for i, callValue := range itx.CallValueInfo {
-		callValues[i] = callValue.TokenID + ":" + strconv.FormatInt(callValue.CallValue, 10)
-	}
 
 	return &CsvInternalTx{
 		TransactionHash:   itx.TransactionHash,
