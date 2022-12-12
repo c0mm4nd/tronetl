@@ -87,19 +87,19 @@ func main() {
 		Run: func(cmd *cobra.Command, args []string) {
 			var err error
 			var tfOut *os.File
-			if *txsOutput != "-" {
+			if *tfOutput != "-" {
 				tfOut, err = os.Create(*tfOutput)
 				chk(err)
 			}
 
 			var logOut *os.File
-			if *txsOutput != "-" {
+			if *logOutput != "-" {
 				logOut, err = os.Create(*logOutput)
 				chk(err)
 			}
 
 			var internalTxOut *os.File
-			if *txsOutput != "-" {
+			if *internalTxOutput != "-" {
 				internalTxOut, err = os.Create(*internalTxOutput)
 				chk(err)
 			}
