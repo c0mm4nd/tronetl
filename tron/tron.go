@@ -133,6 +133,24 @@ func (c *TronClient) GetAccount(address string) *HTTPAccount {
 	return &acc
 }
 
+func (c *TronClient) GetContract(address string) *HTTPContract {
+	url := c.httpURI + "/wallet/getcontract" + "?visible=true"
+	payload, err := json.Marshal(map[string]any{
+		"value": address,
+	})
+	chk(err)
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(payload))
+	chk(err)
+	body, err := io.ReadAll(resp.Body)
+	chk(err)
+
+	var contract HTTPContract
+	err = json.Unmarshal(body, &contract)
+	chk(err)
+
+	return &contract
+}
+
 func toBlockNumArg(number *big.Int) string {
 	if number == nil {
 		return "latest"
