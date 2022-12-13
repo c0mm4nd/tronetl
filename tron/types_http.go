@@ -126,3 +126,101 @@ type TRC10TransferParams struct {
 	OwnerAddress string   `json:"owner_address"`
 	ToAddress    string   `json:"to_address"`
 }
+
+type HTTPVote struct {
+	VoteAddress string `json:"vote_address"`
+	VoteCount   int64  `json:"vote_count"`
+}
+
+type HTTPFrozen struct {
+	FrozenBalance int64 `json:"frozen_balance"`
+	ExpireTime    int64 `json:"expire_time"`
+}
+
+type HTTPPermision struct {
+	PermType       string `json:"type"`
+	ID             int32  `json:"id"`
+	PermissionName string `json:"permission_name"`
+	Threshold      int64  `json:"threshold"`
+	Parent_id      int32  `json:"parent_id"`
+	Operations     string `json:"operations"`
+	Keys           []*struct {
+		Address string `json:"address"`
+		Weight  string `json:"weight"`
+	} `json:"keys"`
+}
+
+type HTTPAccount struct {
+	AccountName string      `json:"account_name"`
+	AccountType string      `json:"type"`
+	Address     string      `json:"address"`
+	Balance     int64       `json:"balance"`
+	Votes       []*HTTPVote `json:"votes"`
+	Asset       []struct {
+		Key   string `json:"key"`
+		Value int    `json:"value"`
+	} `json:"asset"`
+	AssetV2 []struct {
+		Key   string `json:"key"`
+		Value int    `json:"value"`
+	} `json:"assetV2"`
+	Frozen                                     []*HTTPFrozen `json:"frozen"`
+	NetUsage                                   int64         `json:"net_usage"`
+	AcquiredDelegatedFrozenBalanceForBandwidth int64         `json:"acquired_delegated_frozen_balance_for_bandwidth"`
+	DelegatedFrozenBalanceForBandwidth         int64         `json:"delegated_frozen_balance_for_bandwidth"`
+	CreateTime                                 int64         `json:"create_time"`
+	LatestOprationTime                         int64         `json:"latest_opration_time"`
+	Allowance                                  int64         `json:"allowance"`
+	// last withdraw time
+	LatestWithdrawTime int64 `json:"latest_withdraw_time"`
+	// not used so far
+	Code        string `json:"code"`
+	IsWitness   bool   `json:"is_witness"`
+	IsCommittee bool   `json:"is_committee"`
+	// frozen asset(for asset issuer)
+	FrozenSupply []*HTTPFrozen `json:"frozen_supply"`
+	// asset_issued_name
+	AssetIssuedName          string `json:"asset_issued_name"`
+	AssetIssuedID            string `json:"asset_issued_ID"`
+	LatestAssetOperationTime []struct {
+		Key   string `json:"key"`
+		Value int    `json:"value"`
+	} `json:"latest_asset_operation_time"`
+	LatestAssetOperationTimeV2 []struct {
+		Key   string `json:"key"`
+		Value int    `json:"value"`
+	} `json:"latest_asset_operation_timeV2"`
+	FreeNetUsage      int64 `json:"free_net_usage"`
+	FreeAssetNetUsage []struct {
+		Key   string `json:"key"`
+		Value int    `json:"value"`
+	} `json:"free_asset_net_usage"`
+	FreeAssetNetUsageV2 []struct {
+		Key   string `json:"key"`
+		Value int    `json:"value"`
+	} `json:"free_asset_net_usageV2"`
+	LatestConsumeTime     int64  `json:"latest_consume_time"`
+	LatestConsumeFreeTime int64  `json:"latest_consume_free_time"`
+	AccountID             string `json:"account_id"`
+	AccountResource       *struct {
+		// energy resource, get from frozen
+		EnergyUsage int64 `json:"energy_usage"`
+		// the frozen balance for energy
+		FrozenBalanceForEnergy     *HTTPFrozen `json:"frozen_balance_for_energy"`
+		LatestConsumeTimeForEnergy int64       `json:"latest_consume_time_for_energy"`
+
+		// Frozen balance provided by other accounts to this account
+		AcquiredDelegatedFrozenBalanceForEnergy int64 `json:"acquired_delegated_frozen_balance_for_energy"`
+		// Frozen balances provided to other accounts
+		DelegatedFrozenBalanceForEnergy int64 `json:"delegated_frozen_balance_for_energy"`
+
+		// storage resource, get from market
+		StorageLimit              int64 `json:"storage_limit"`
+		StorageUsage              int64 `json:"storage_usage"`
+		LatestExchangeStorageTime int64 `json:"latest_exchange_storage_time"`
+	} `json:"account_resource"`
+	CodeHash          string           `json:"codeHash"`
+	OwnerPermission   *HTTPPermision   `json:"owner_permission,omitempty"`
+	WitnessPermission *HTTPPermision   `json:"witness_permission,omitempty"`
+	ActivePermission  []*HTTPPermision `json:"active_permission,omitempty"`
+}

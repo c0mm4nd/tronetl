@@ -115,6 +115,24 @@ func (c *TronClient) GetTxInfosByNumber(number uint64) []HTTPTxInfo {
 	return txInfos
 }
 
+func (c *TronClient) GetAccount(address string) *HTTPAccount {
+	url := c.httpURI + "/wallet/getaccount" + "?visible=true"
+	payload, err := json.Marshal(map[string]any{
+		"address": address,
+	})
+	chk(err)
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(payload))
+	chk(err)
+	body, err := io.ReadAll(resp.Body)
+	chk(err)
+
+	var acc HTTPAccount
+	err = json.Unmarshal(body, &acc)
+	chk(err)
+
+	return &acc
+}
+
 func toBlockNumArg(number *big.Int) string {
 	if number == nil {
 		return "latest"
