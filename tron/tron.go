@@ -29,24 +29,6 @@ func NewTronClient(providerURL string) *TronClient {
 	}
 }
 
-func (c *TronClient) GetTxInfosByNumber(number uint64) []HTTPTxInfo {
-	url := c.httpURI + "/wallet/gettransactioninfobyblocknum"
-	payload, err := json.Marshal(map[string]any{
-		"num": number,
-	})
-	chk(err)
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(payload))
-	chk(err)
-	body, err := io.ReadAll(resp.Body)
-	chk(err)
-
-	var txInfos []HTTPTxInfo
-	err = json.Unmarshal(body, &txInfos)
-	chk(err)
-
-	return txInfos
-}
-
 func (c *TronClient) GetJSONBlockByNumberWithTxs(number *big.Int) *JSONBlockWithTxs {
 	payload, err := json.Marshal(map[string]any{
 		"jsonrpc": "2.0",
@@ -98,7 +80,7 @@ func (c *TronClient) GetJSONBlockByNumberWithTxIDs(number *big.Int) *JSONBlockWi
 }
 
 func (c *TronClient) GetHTTPBlockByNumber(number *big.Int) *HTTPBlock {
-	url := c.httpURI + "/wallet/getblockbynum"
+	url := c.httpURI + "/wallet/getblockbynum" + "?visible=true"
 	payload, err := json.Marshal(map[string]any{
 		"num": number.Uint64(),
 	})
@@ -113,6 +95,24 @@ func (c *TronClient) GetHTTPBlockByNumber(number *big.Int) *HTTPBlock {
 	chk(err)
 
 	return &block
+}
+
+func (c *TronClient) GetTxInfosByNumber(number uint64) []HTTPTxInfo {
+	url := c.httpURI + "/wallet/gettransactioninfobyblocknum" + "?visible=true"
+	payload, err := json.Marshal(map[string]any{
+		"num": number,
+	})
+	chk(err)
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(payload))
+	chk(err)
+	body, err := io.ReadAll(resp.Body)
+	chk(err)
+
+	var txInfos []HTTPTxInfo
+	err = json.Unmarshal(body, &txInfos)
+	chk(err)
+
+	return txInfos
 }
 
 func toBlockNumArg(number *big.Int) string {
