@@ -166,9 +166,9 @@ func NewCsvTRC10Transfer(blockNum uint64, txIndex, callIndex int, httpTx *tron.H
 
 // CsvLog is a EVM smart contract event log output
 type CsvLog struct {
-	BlockNumber     uint64 `csv:"blockNumber" csv:"block_number"`
-	TransactionHash string `csv:"transaction_hash" csv:"transaction_hash"`
-	LogIndex        uint   `csv:"logIndex" csv:"log_index"`
+	BlockNumber     uint64 `csv:"block_number"`
+	TransactionHash string `csv:"transaction_hash"`
+	LogIndex        uint   `csv:"log_index"`
 
 	Address string `csv:"address"`
 	Topics  string `csv:"topics"`
