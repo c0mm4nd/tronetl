@@ -80,9 +80,10 @@ func (c *TronClient) GetJSONBlockByNumberWithTxIDs(number *big.Int) *JSONBlockWi
 }
 
 func (c *TronClient) GetHTTPBlockByNumber(number *big.Int) *HTTPBlock {
-	url := c.httpURI + "/wallet/getblockbynum" + "?visible=true"
+	url := c.httpURI + "/wallet/getblockbynum" // + "?visible=true"
 	payload, err := json.Marshal(map[string]any{
 		"num": number.Uint64(),
+		// "visable": true,
 	})
 	chk(err)
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(payload))
@@ -98,9 +99,10 @@ func (c *TronClient) GetHTTPBlockByNumber(number *big.Int) *HTTPBlock {
 }
 
 func (c *TronClient) GetTxInfosByNumber(number uint64) []HTTPTxInfo {
-	url := c.httpURI + "/wallet/gettransactioninfobyblocknum" + "?visible=true"
+	url := c.httpURI + "/wallet/gettransactioninfobyblocknum" // + "?visible=true"
 	payload, err := json.Marshal(map[string]any{
 		"num": number,
+		// "visable": true,
 	})
 	chk(err)
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(payload))
@@ -116,9 +118,10 @@ func (c *TronClient) GetTxInfosByNumber(number uint64) []HTTPTxInfo {
 }
 
 func (c *TronClient) GetAccount(address string) *HTTPAccount {
-	url := c.httpURI + "/wallet/getaccount" + "?visible=true"
+	url := c.httpURI + "/wallet/getaccount" // + "?visible=true"
 	payload, err := json.Marshal(map[string]any{
 		"address": address,
+		// "visable": true,
 	})
 	chk(err)
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(payload))
@@ -134,9 +137,10 @@ func (c *TronClient) GetAccount(address string) *HTTPAccount {
 }
 
 func (c *TronClient) GetContract(address string) *HTTPContract {
-	url := c.httpURI + "/wallet/getcontract" + "?visible=true"
+	url := c.httpURI + "/wallet/getcontract" // + "?visible=true"
 	payload, err := json.Marshal(map[string]any{
 		"value": address,
+		// "visable": true,
 	})
 	chk(err)
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(payload))
