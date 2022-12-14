@@ -152,7 +152,7 @@ type HTTPPermision struct {
 
 type HTTPAccount struct {
 	AccountName string      `json:"account_name,omitempty"`
-	AccountType string      `json:"type,omitempty"`
+	AccountType string      `json:"type,omitempty"` // Normal = 0; AssetIssue = 1; Contract = 2;
 	Address     string      `json:"address,omitempty"`
 	Balance     int64       `json:"balance,omitempty"`
 	Votes       []*HTTPVote `json:"votes,omitempty"`
