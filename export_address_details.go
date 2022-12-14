@@ -31,13 +31,15 @@ func ExportAddressDetails(options *ExportAddressDetailsOptions) {
 			for _, sub := range strings.Split(line, ",") {
 				if sub[0] == 'T' && len(sub) == 34 {
 					// =Taddr
-					allAddrs = append(allAddrs, sub)
+					allAddrs = append(allAddrs, Tstring2HexAddr(sub))
 				}
 			}
 		}
 	}
 
-	allAddrs = append(allAddrs, options.Addresses...)
+	for i := range options.Addresses {
+		allAddrs = append(allAddrs, Tstring2HexAddr(options.Addresses[i]))
+	}
 
 	var accountsCsvEncoder, contractsEncoder *csvutil.Encoder
 	if options.accountsOutput != nil {
@@ -57,12 +59,13 @@ func ExportAddressDetails(options *ExportAddressDetailsOptions) {
 		acc := cli.GetAccount(addr)
 
 		if options.accountsOutput != nil {
-			accountsCsvEncoder.Encode(acc)
+			accountsCsvEncoder.Encode(NewCsvAccount(acc))
 		}
 
 		if options.contractsOutput != nil && strings.ToLower(acc.AccountType) == "contract" {
 			contract := cli.GetContract(addr)
 			contractsEncoder.Encode(NewCsvContract(contract))
+			// TODO: add token output
 		}
 
 		// TODO: support type == AssetIssue

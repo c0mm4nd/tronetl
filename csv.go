@@ -259,12 +259,15 @@ type CsvAccount struct {
 	Address     string `csv:"address"`
 	Type        string `csv:"type"`
 	CreateTime  int64  `csv:"create_time"`
+
+	// DecodedName string `csv:decoded_name`
 }
 
 func NewCsvAccount(acc *tron.HTTPAccount) *CsvAccount {
+	name, _ := hex.DecodeString(acc.AccountName)
 	return &CsvAccount{
-		AccountName: acc.AccountName,
-		Address:     acc.Address,
+		AccountName: string(name),
+		Address:     Hex2TAddr(acc.Address),
 		Type:        acc.AccountType,
 		CreateTime:  acc.CreateTime / 1000,
 	}
@@ -315,7 +318,7 @@ func NewCsvContract(c *tron.HTTPContract) *CsvContract {
 		implementsAnyOf(hashes, "approve(address,uint256)")
 
 	return &CsvContract{
-		Address:           c.ContractAddress,
+		Address:           Hex2TAddr(c.ContractAddress),
 		Bytecode:          c.Bytecode,
 		FunctionSighashes: strings.Join(hashes, ";"),
 		IsErc20:           isErc20,
@@ -325,7 +328,7 @@ func NewCsvContract(c *tron.HTTPContract) *CsvContract {
 		// append
 		ContractName:               c.Name,
 		ConsumeUserResourcePercent: c.ConsumeUserResourcePercent,
-		OriginAddress:              c.OriginAddress,
+		OriginAddress:              Hex2TAddr(c.OriginAddress),
 		OriginEnergyLimit:          c.OriginEnergyLimit,
 	}
 }

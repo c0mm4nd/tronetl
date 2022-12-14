@@ -23,12 +23,15 @@ var rootCmd = &cobra.Command{
 }
 
 func main() {
+	nodeConfigs := pflag.NewFlagSet("node config", pflag.ExitOnError)
+	providerURI := nodeConfigs.String("provider-uri", "http://localhost", "the base uri of the tron fullnode (without port)")
+
 	defaults := pflag.NewFlagSet("defaults for all commands", pflag.ExitOnError)
-	providerURI := defaults.String("provider-uri", "http://localhost", "the base uri of the tron fullnode (without port)")
 	startBlock := defaults.Uint64("start-block", 0, "the starting block number")
 	endBlock := defaults.Uint64("end-block", 0, "the ending block number")
 	startTimestamp := defaults.Uint64("start-timestamp", 0, "the starting block's timestamp (in UTC)")
 	endTimestamp := defaults.Uint64("end-timestamp", 0, "the ending block's timestamp (in UTC)")
+	defaults.AddFlagSet(nodeConfigs)
 
 	cmdBlocksAndTxs := pflag.NewFlagSet("export_blocks_and_transactions", pflag.ExitOnError)
 	blksOutput := cmdBlocksAndTxs.String("blocks-output", "blocks.csv", "the CSV file for block outputs, use - to omit")
@@ -49,6 +52,7 @@ func main() {
 	addrsSource := cmdAddrDetails.String("addrs-source", "-", "the CSV file for block outputs, or use address")
 	accountsOutput := cmdAddrDetails.String("accounts-output", "accounts.csv", "the CSV file for all account info outputs, use - to omit")
 	contractsOutput := cmdAddrDetails.String("contracts-output", "contract.csv", "the CSV file for contract account detail outputs, use - to omit")
+	cmdAddrDetails.AddFlagSet(nodeConfigs)
 
 	exportBlocksAndTransactionsCmd := &cobra.Command{
 		Use:   "export_blocks_and_transactions",
@@ -164,9 +168,12 @@ func main() {
 				contractsOutput: contractsOut,
 
 				Addresses: *addrs,
+
+				ProviderURI: *providerURI,
 			})
 		},
 	}
+	exportAddressDetailsCmd.Flags().AddFlagSet(cmdAddrDetails)
 
 	serverCmd := &cobra.Command{
 		Use:   "server",
