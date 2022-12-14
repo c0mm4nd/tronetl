@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/hex"
 	"strings"
 
 	"git.ngx.fi/c0mm4nd/tronetl/tron"
+	"golang.org/x/crypto/sha3"
 )
 
 // CsvTransaction represents a tron tx csv output, not trc10
@@ -250,3 +252,107 @@ func NewCsvReceipt(blockNum uint64, txHash string, txIndex uint, contractAddr st
 		Result:            r.Result,
 	}
 }
+
+// CsvAccount is a tron account
+type CsvAccount struct {
+	AccountName string `csv:"account_name"`
+	Address     string `csv:"address"`
+	Type        string `csv:"type"`
+	CreateTime  int64  `csv:"create_time"`
+}
+
+func NewCsvAccount(acc *tron.HTTPAccount) *CsvAccount {
+	return &CsvAccount{
+		AccountName: acc.AccountName,
+		Address:     acc.Address,
+		Type:        acc.AccountType,
+		CreateTime:  acc.CreateTime / 1000,
+	}
+}
+
+// CsvContract is a standard EVM contract
+type CsvContract struct {
+	Address           string `csv:"address"`
+	Bytecode          string `csv:"bytecode"`
+	FunctionSighashes string `csv:"function_sighashes"`
+	IsErc20           bool   `csv:"is_erc20"`
+	IsErc721          bool   `csv:"is_erc721"`
+	BlockNumber       uint64 `csv:"block_number"`
+
+	// append some...
+	ContractName               string
+	ConsumeUserResourcePercent int
+	OriginAddress              string
+	OriginEnergyLimit          int64
+}
+
+var keccakHasher = sha3.NewLegacyKeccak256()
+
+func NewCsvContract(c *tron.HTTPContract) *CsvContract {
+	hashes := make([]string, 0, len(c.Abi.Entrys))
+	for _, abi := range c.Abi.Entrys {
+		if strings.ToLower(abi.Type) == "function" {
+			content := abi.Name + "("
+			types := make([]string, 0, len(abi.Inputs))
+			for _, input := range abi.Inputs {
+				types = append(types, input.Type)
+			}
+			funchash := keccakHasher.Sum([]byte(content + strings.Join(types, ",") + ")"))
+			hashes = append(hashes, hex.EncodeToString(funchash))
+		}
+	}
+
+	isErc20 := implementsAnyOf(hashes, "totalSupply()") &&
+		implementsAnyOf(hashes, "balanceOf(address)") &&
+		implementsAnyOf(hashes, "transfer(address,uint256)") &&
+		implementsAnyOf(hashes, "transferFrom(address,address,uint256)") &&
+		implementsAnyOf(hashes, "approve(address,uint256)") &&
+		implementsAnyOf(hashes, "allowance(address,address)")
+
+	isErc721 := implementsAnyOf(hashes, "balanceOf(address)") &&
+		implementsAnyOf(hashes, "ownerOf(uint256)") &&
+		implementsAnyOf(hashes, "transfer(address,uint256)", "transferFrom(address,address,uint256)") &&
+		implementsAnyOf(hashes, "approve(address,uint256)")
+
+	return &CsvContract{
+		Address:           c.ContractAddress,
+		Bytecode:          c.Bytecode,
+		FunctionSighashes: strings.Join(hashes, ";"),
+		IsErc20:           isErc20,
+		IsErc721:          isErc721,
+		BlockNumber:       0,
+
+		// append
+		ContractName:               c.Name,
+		ConsumeUserResourcePercent: c.ConsumeUserResourcePercent,
+		OriginAddress:              c.OriginAddress,
+		OriginEnergyLimit:          c.OriginEnergyLimit,
+	}
+}
+
+func implementsAnyOf(hashes []string, sigStrs ...string) bool {
+	for i := range sigStrs {
+		hash := hex.EncodeToString(keccakHasher.Sum([]byte(sigStrs[i])))
+		for j := range hashes {
+			if hashes[j] == hash {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+// CsvReceipt is a standard EVM contract token
+type CsvTokens struct {
+	Address     string `csv:"address"`
+	Symbol      string `csv:"symbol"`
+	Name        string `csv:"name"`
+	Decimals    bool   `csv:"decimals"`
+	TotalSupply bool   `csv:"total_supply"`
+	BlockNumber uint64 `csv:"block_number"`
+}
+
+// func NewCsvTokens(blockNum uint64, ) *CsvTokens {
+// 	return
+// }

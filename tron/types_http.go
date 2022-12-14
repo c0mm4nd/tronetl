@@ -237,7 +237,7 @@ type HTTPContract struct {
 	CallValue                  int64  `json:"call_value,omitempty"`
 	ConsumeUserResourcePercent int    `json:"consume_user_resource_percent,omitempty"`
 	Name                       string `json:"name,omitempty"`
-	OriginEnergyLimit          int    `json:"origin_energy_limit,omitempty"`
+	OriginEnergyLimit          int64  `json:"origin_energy_limit,omitempty"`
 	CodeHash                   string `json:"code_hash,omitempty"`
 	TRXHash                    string `json:"trx_hash,omitempty"`
 }

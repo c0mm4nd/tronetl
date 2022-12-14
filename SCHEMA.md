@@ -161,6 +161,16 @@ The tx receipt data structure is as follows:
 
 ---
 
+## addresses.csv
+
+The tx receipt data structure is as follows:
+
+| Column  | Type    |
+| ------- | ------- |
+| address | address |
+
+---
+
 
 ## Note
 

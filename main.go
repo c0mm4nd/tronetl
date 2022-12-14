@@ -44,6 +44,12 @@ func main() {
 	filterContracts := cmdTokenTf.StringArray("contracts", []string{}, "just output selected contracts' transfers")
 	cmdTokenTf.AddFlagSet(defaults)
 
+	cmdAddrDetails := pflag.NewFlagSet("export_address_details", pflag.ExitOnError)
+	addrs := cmdAddrDetails.StringArray("addrs", []string{}, "a supplementary address list to load details")
+	addrsSource := cmdAddrDetails.String("addrs-source", "-", "the CSV file for block outputs, or use address")
+	accountsOutput := cmdAddrDetails.String("accounts-output", "accounts.csv", "the CSV file for all account info outputs, use - to omit")
+	contractsOutput := cmdAddrDetails.String("contracts-output", "contract.csv", "the CSV file for contract account detail outputs, use - to omit")
+
 	exportBlocksAndTransactionsCmd := &cobra.Command{
 		Use:   "export_blocks_and_transactions",
 		Short: "export blocks, with the blocks' trx and trc10 transactions",
@@ -129,6 +135,39 @@ func main() {
 	}
 	exportTokenTransfersCmd.Flags().AddFlagSet(cmdTokenTf)
 
+	exportAddressDetailsCmd := &cobra.Command{
+		Use:   "export_address_details",
+		Short: "export the addresses' type and smart contract related details (require T-address format)",
+		Run: func(cmd *cobra.Command, args []string) {
+			var err error
+			var addrSrc *os.File
+			if *addrsSource != "" && *addrsSource != "-" {
+				addrSrc, err = os.Create(*addrsSource)
+				chk(err)
+			}
+
+			var accountOut *os.File
+			if *accountsOutput != "-" {
+				accountOut, err = os.Create(*accountsOutput)
+				chk(err)
+			}
+
+			var contractsOut *os.File
+			if *contractsOutput != "-" {
+				contractsOut, err = os.Create(*contractsOutput)
+				chk(err)
+			}
+
+			ExportAddressDetails(&ExportAddressDetailsOptions{
+				addrSource:      addrSrc,
+				accountsOutput:  accountOut,
+				contractsOutput: contractsOut,
+
+				Addresses: *addrs,
+			})
+		},
+	}
+
 	serverCmd := &cobra.Command{
 		Use:   "server",
 		Short: "run a server for servings the export tasks",
@@ -203,9 +242,12 @@ func main() {
 		},
 	}
 
-	rootCmd.AddCommand(exportBlocksAndTransactionsCmd)
-	rootCmd.AddCommand(exportTokenTransfersCmd)
-	rootCmd.AddCommand(serverCmd)
+	rootCmd.AddCommand(
+		exportBlocksAndTransactionsCmd,
+		exportTokenTransfersCmd,
+		exportAddressDetailsCmd,
+		serverCmd,
+	)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
