@@ -32,14 +32,14 @@ func ExportAddressDetails(options *ExportAddressDetailsOptions) {
 			for _, sub := range strings.Split(line, ",") {
 				if len(sub) > 0 && sub[0] == 'T' && len(sub) == 34 {
 					// =Taddr
-					allAddrs = append(allAddrs, tron.Tstring2HexAddr(sub))
+					allAddrs = append(allAddrs, tron.EnsureHexAddr(sub))
 				}
 			}
 		}
 	}
 
 	for i := range options.Addresses {
-		allAddrs = append(allAddrs, tron.Tstring2HexAddr(options.Addresses[i]))
+		allAddrs = append(allAddrs, tron.EnsureHexAddr(options.Addresses[i]))
 	}
 
 	var accountsCsvEncoder, contractsEncoder, tokensEncoder *csvutil.Encoder

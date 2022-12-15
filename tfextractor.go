@@ -45,7 +45,7 @@ func ExtractTransferFromLog(logTopics []string, logData string, logContractAddre
 
 	return &Transfer{
 		BlockNumber:     logBlockNum,
-		TokenAddress:    tron.Hex2TAddr(logContractAddress),
+		TokenAddress:    tron.EnsureTAddr(logContractAddress),
 		FromAddress:     hash2Addr(topics_with_data[1]),
 		ToAddress:       hash2Addr(topics_with_data[2]),
 		Value:           value.String(),
@@ -70,5 +70,5 @@ func hash2Addr(hash string) string {
 	}
 	// addr := common.Address{}
 	// copy(addr[:], )
-	return tron.Hex2TAddr(hash[12*2:])
+	return tron.EnsureTAddr(hash[12*2:])
 }

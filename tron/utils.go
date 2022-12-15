@@ -8,8 +8,8 @@ import (
 	"github.com/btcsuite/btcd/btcutil/base58"
 )
 
-// Hex2TAddr converts a (unknwon) Hex to TAddr
-func Hex2TAddr(hexStr string) string {
+// EnsureTAddr converts a (unknwon) Hex to TAddr
+func EnsureTAddr(hexStr string) string {
 	if hexStr[0] == 'T' {
 		log.Printf("Taddr %s input as a hex?", hexStr)
 		return hexStr
@@ -33,10 +33,11 @@ func Hex2TAddr(hexStr string) string {
 	panic(hexStr + "is not a no-prefix hex addr")
 }
 
-// Tstring2HexAddr converts a T-string to Hex addr
-func Tstring2HexAddr(theTstr string) string {
+// EnsureHexAddr converts a T-string to Hex addr
+func EnsureHexAddr(theTstr string) string {
 	if theTstr[0] != 'T' {
-		panic(theTstr + " is not a TAddr")
+		log.Println(theTstr + " is not a TAddr")
+		return theTstr
 	}
 
 	bs58decoded := base58.Decode(theTstr)

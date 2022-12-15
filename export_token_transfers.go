@@ -51,7 +51,7 @@ func ExportTransfers(options *ExportTransferOptions) {
 
 	filterLogContracts := make([]string, len(options.Contracts))
 	for i, addr := range options.Contracts {
-		filterLogContracts[i] = tron.Tstring2HexAddr(addr)[2:] // hex addr with 41 prefix
+		filterLogContracts[i] = tron.EnsureHexAddr(addr)[2:] // hex addr with 41 prefix
 	}
 
 	if options.StartTimestamp != 0 {

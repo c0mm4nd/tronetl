@@ -10,15 +10,15 @@ import (
 func TestCall(t *testing.T) {
 	cli := NewTronClient("http://localhost")
 	fmt.Println(cli.CallContract(
-		Tstring2HexAddr("TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"),
-		Tstring2HexAddr("THPvaUhoh2Qn2y9THCZML3H815hhFhn5YC"),
+		EnsureHexAddr("TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"),
+		EnsureHexAddr("THPvaUhoh2Qn2y9THCZML3H815hhFhn5YC"),
 		0,
 		0,
 		"totalSupply()",
 	).ConstantResult)
 	result := cli.CallContract(
-		Tstring2HexAddr("TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"),
-		Tstring2HexAddr("THPvaUhoh2Qn2y9THCZML3H815hhFhn5YC"),
+		EnsureHexAddr("TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"),
+		EnsureHexAddr("THPvaUhoh2Qn2y9THCZML3H815hhFhn5YC"),
 		0,
 		0,
 		"symbol()",

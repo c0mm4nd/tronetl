@@ -179,7 +179,7 @@ func (c *TronClient) CallContract(contractAddr, callerAddr string, val, feeLimit
 		case uint64:
 			u256Params[i] = uint256.NewInt(p).Hex()[2:]
 		case Address:
-			addr := Tstring2HexAddr(string(p))
+			addr := EnsureHexAddr(string(p))
 			addr = addr[2:]
 
 			u, err := uint256.FromHex(addr)
