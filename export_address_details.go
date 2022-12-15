@@ -15,6 +15,7 @@ type ExportAddressDetailsOptions struct {
 	addrSource      io.Reader
 	accountsOutput  io.Writer
 	contractsOutput io.Writer
+	tokensOutput    io.Writer
 
 	Addresses []string
 
@@ -31,17 +32,17 @@ func ExportAddressDetails(options *ExportAddressDetailsOptions) {
 			for _, sub := range strings.Split(line, ",") {
 				if sub[0] == 'T' && len(sub) == 34 {
 					// =Taddr
-					allAddrs = append(allAddrs, Tstring2HexAddr(sub))
+					allAddrs = append(allAddrs, tron.Tstring2HexAddr(sub))
 				}
 			}
 		}
 	}
 
 	for i := range options.Addresses {
-		allAddrs = append(allAddrs, Tstring2HexAddr(options.Addresses[i]))
+		allAddrs = append(allAddrs, tron.Tstring2HexAddr(options.Addresses[i]))
 	}
 
-	var accountsCsvEncoder, contractsEncoder *csvutil.Encoder
+	var accountsCsvEncoder, contractsEncoder, tokensEncoder *csvutil.Encoder
 	if options.accountsOutput != nil {
 		accountsCsvWriter := csv.NewWriter(options.accountsOutput)
 		defer accountsCsvWriter.Flush()
@@ -54,6 +55,12 @@ func ExportAddressDetails(options *ExportAddressDetailsOptions) {
 		contractsEncoder = csvutil.NewEncoder(contractsCsvWriter)
 	}
 
+	if options.tokensOutput != nil {
+		tokensCsvWriter := csv.NewWriter(options.tokensOutput)
+		defer tokensCsvWriter.Flush()
+		tokensEncoder = csvutil.NewEncoder(tokensCsvWriter)
+	}
+
 	cli := tron.NewTronClient(options.ProviderURI)
 	for _, addr := range allAddrs {
 		acc := cli.GetAccount(addr)
@@ -64,8 +71,12 @@ func ExportAddressDetails(options *ExportAddressDetailsOptions) {
 
 		if options.contractsOutput != nil && strings.ToLower(acc.AccountType) == "contract" {
 			contract := cli.GetContract(addr)
-			contractsEncoder.Encode(NewCsvContract(contract))
-			// TODO: add token output
+			csvContract := NewCsvContract(contract)
+			contractsEncoder.Encode(csvContract)
+
+			if options.tokensOutput != nil && (csvContract.IsErc20 || csvContract.IsErc721) {
+				tokensEncoder.Encode(NewCsvTokens(cli, contract))
+			}
 		}
 
 		// TODO: support type == AssetIssue

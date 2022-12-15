@@ -1,12 +1,10 @@
 package main
 
 import (
-	"crypto/sha256"
 	"encoding/hex"
-	"log"
 	"math/big"
 
-	"github.com/btcsuite/btcd/btcutil/base58"
+	"git.ngx.fi/c0mm4nd/tronetl/tron"
 )
 
 const TRANSFER_EVENT_TOPIC = "ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef" // NO 0x Prefix for ANY topic!!!
@@ -47,7 +45,7 @@ func ExtractTransferFromLog(logTopics []string, logData string, logContractAddre
 
 	return &Transfer{
 		BlockNumber:     logBlockNum,
-		TokenAddress:    Hex2TAddr(logContractAddress),
+		TokenAddress:    tron.Hex2TAddr(logContractAddress),
 		FromAddress:     hash2Addr(topics_with_data[1]),
 		ToAddress:       hash2Addr(topics_with_data[2]),
 		Value:           value.String(),
@@ -72,41 +70,5 @@ func hash2Addr(hash string) string {
 	}
 	// addr := common.Address{}
 	// copy(addr[:], )
-	return Hex2TAddr(hash[12*2:])
-}
-
-// Hex2TAddr converts a (unknwon) Hex to TAddr
-func Hex2TAddr(hexStr string) string {
-	if hexStr[0] == 'T' {
-		log.Printf("Taddr %s input as a hex?", hexStr)
-		return hexStr
-	}
-
-	if len(hexStr) == 20*2 {
-		hexStr = "41" + hexStr
-	}
-
-	if len(hexStr) == 21*2 {
-		addrBytes, err := hex.DecodeString(hexStr)
-		chk(err)
-		sum0 := sha256.Sum256(addrBytes)
-		sum1 := sha256.Sum256(sum0[:])
-		chksum := sum1[0:4]
-		addrBytes = append(addrBytes, chksum...)
-
-		return base58.Encode(addrBytes)
-	}
-
-	panic(hexStr + "is not a no-prefix hex addr")
-}
-
-// Tstring2HexAddr converts a T-string to Hex addr
-func Tstring2HexAddr(theTstr string) string {
-	if theTstr[0] != 'T' {
-		panic(theTstr + " is not a TAddr")
-	}
-
-	bs58decoded := base58.Decode(theTstr)
-	withoutSum := bs58decoded[:21]
-	return hex.EncodeToString(withoutSum)
+	return tron.Hex2TAddr(hash[12*2:])
 }

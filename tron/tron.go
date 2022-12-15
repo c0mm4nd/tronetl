@@ -3,12 +3,14 @@ package tron
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"math/big"
 	"math/rand"
 	"net/http"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/holiman/uint256"
 )
 
 type TronClient struct {
@@ -153,6 +155,62 @@ func (c *TronClient) GetContract(address string) *HTTPContract {
 	chk(err)
 
 	return &contract
+}
+
+type CallResult struct {
+	Result struct {
+		Result  bool   `json:"result,omitempty"`
+		Code    string `json:"code,omitempty"` // contains "ERROR" when is error
+		Message string `json:"message,omitempty"`
+	} `json:"result,omitempty"`
+	EnergyUsed     int              `json:"energy_used"`
+	ConstantResult []string         `json:"constant_result"`
+	Transaction    *HTTPTransaction `json:"transaction"`
+}
+
+type Address string
+
+// Call is offline
+func (c *TronClient) CallContract(contractAddr, callerAddr string, val, feeLimit int64, funcSig string, params ...any) *CallResult {
+	url := c.httpURI + "/wallet/triggerconstantcontract" // + "?visible=true"
+	u256Params := make([]string, len(params))
+	for i, param := range params {
+		switch p := param.(type) {
+		case uint64:
+			u256Params[i] = uint256.NewInt(p).Hex()[2:]
+		case Address:
+			addr := Tstring2HexAddr(string(p))
+			addr = addr[2:]
+
+			u, err := uint256.FromHex(addr)
+			if err != nil {
+				panic(err)
+			}
+			u256Params[i] = u.Hex()[2:]
+		default:
+			panic(fmt.Sprintf("unsupported type: %#+v", param))
+		}
+	}
+	payload, err := json.Marshal(map[string]any{
+		"contract_address":  contractAddr,
+		"function_selector": funcSig,
+		"parameter":         "",
+		"fee_limit":         feeLimit,
+		"call_value":        val,
+		"owner_address":     callerAddr, // = caller
+		// "visable": true,
+	})
+	chk(err)
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(payload))
+	chk(err)
+	body, err := io.ReadAll(resp.Body)
+	chk(err)
+
+	var result CallResult
+	err = json.Unmarshal(body, &result)
+	chk(err)
+
+	return &result
 }
 
 func toBlockNumArg(number *big.Int) string {

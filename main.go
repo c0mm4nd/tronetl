@@ -52,6 +52,7 @@ func main() {
 	addrsSource := cmdAddrDetails.String("addrs-source", "-", "the CSV file for block outputs, or use address")
 	accountsOutput := cmdAddrDetails.String("accounts-output", "accounts.csv", "the CSV file for all account info outputs, use - to omit")
 	contractsOutput := cmdAddrDetails.String("contracts-output", "contract.csv", "the CSV file for contract account detail outputs, use - to omit")
+	tokensOutput := cmdAddrDetails.String("tokens-output", "tokens.csv", "the CSV file for token contract detail outputs, use - to omit")
 	cmdAddrDetails.AddFlagSet(nodeConfigs)
 
 	exportBlocksAndTransactionsCmd := &cobra.Command{
@@ -162,10 +163,17 @@ func main() {
 				chk(err)
 			}
 
+			var tokensOut *os.File
+			if *tokensOutput != "-" {
+				tokensOut, err = os.Create(*tokensOutput)
+				chk(err)
+			}
+
 			ExportAddressDetails(&ExportAddressDetailsOptions{
 				addrSource:      addrSrc,
 				accountsOutput:  accountOut,
 				contractsOutput: contractsOut,
+				tokensOutput:    tokensOut,
 
 				Addresses: *addrs,
 

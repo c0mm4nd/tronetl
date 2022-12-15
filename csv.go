@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/hex"
+	"math/big"
 	"strings"
 
 	"git.ngx.fi/c0mm4nd/tronetl/tron"
@@ -40,7 +41,7 @@ type CsvTransaction struct {
 func NewCsvTransaction(blockTimestamp uint64, txIndex int, jsontx *tron.JSONTransaction, httptx *tron.HTTPTransaction) *CsvTransaction {
 	to := ""
 	if jsontx.To != "" {
-		to = Hex2TAddr(jsontx.To[2:])
+		to = tron.Hex2TAddr(jsontx.To[2:])
 	}
 
 	txType := "Unknown"
@@ -54,7 +55,7 @@ func NewCsvTransaction(blockTimestamp uint64, txIndex int, jsontx *tron.JSONTran
 		BlockHash:            jsontx.BlockHash[2:],
 		BlockNumber:          uint64(*jsontx.BlockNumber),
 		TransactionIndex:     txIndex,
-		FromAddress:          Hex2TAddr(jsontx.From[2:]),
+		FromAddress:          tron.Hex2TAddr(jsontx.From[2:]),
 		ToAddress:            to,
 		Value:                jsontx.Value.ToInt().String(),
 		Gas:                  jsontx.Gas.ToInt().String(),
@@ -111,8 +112,8 @@ func NewCsvBlock(jsonblock *tron.JSONBlockWithTxs, httpblock *tron.HTTPBlock) *C
 		LogsBloom:        jsonblock.LogsBloom[2:],
 		TransactionsRoot: jsonblock.TransactionsRoot[2:],
 		StateRoot:        jsonblock.StateRoot[2:],
-		ReceiptsRoot:     "",                             // block.ReceiptsRoot
-		Miner:            Hex2TAddr(jsonblock.Miner[2:]), // = WitnessAddress
+		ReceiptsRoot:     "",                                  // block.ReceiptsRoot
+		Miner:            tron.Hex2TAddr(jsonblock.Miner[2:]), // = WitnessAddress
 		Difficulty:       "",
 		TotalDifficulty:  "",
 		Size:             uint64(*jsonblock.Size),
@@ -158,8 +159,8 @@ func NewCsvTRC10Transfer(blockNum uint64, txIndex, callIndex int, httpTx *tron.H
 		ContractCallIndex: callIndex,
 
 		AssetName:   tfParams.AssetName,
-		FromAddress: Hex2TAddr(tfParams.OwnerAddress),
-		ToAddress:   Hex2TAddr(tfParams.ToAddress),
+		FromAddress: tron.Hex2TAddr(tfParams.OwnerAddress),
+		ToAddress:   tron.Hex2TAddr(tfParams.ToAddress),
 		Value:       tfParams.Amount.String(),
 	}
 }
@@ -182,7 +183,7 @@ func NewCsvLog(blockNumber uint64, txHash string, logIndex uint, log *tron.HTTPT
 		TransactionHash: txHash,
 		LogIndex:        logIndex,
 
-		Address: Hex2TAddr(log.Address),
+		Address: tron.Hex2TAddr(log.Address),
 		Topics:  strings.Join(log.Topics, ";"),
 		Data:    log.Data,
 	}
@@ -207,8 +208,8 @@ func NewCsvInternalTx(index uint, itx *tron.HTTPInternalTransaction, callInfoInd
 	return &CsvInternalTx{
 		TransactionHash:   itx.TransactionHash,
 		Index:             index,
-		CallerAddress:     Hex2TAddr(itx.CallerAddress),
-		TransferToAddress: Hex2TAddr(itx.TransferToAddress),
+		CallerAddress:     tron.Hex2TAddr(itx.CallerAddress),
+		TransferToAddress: tron.Hex2TAddr(itx.TransferToAddress),
 		// CallValueInfo:     strings.Join(callValues, ";"),
 		CallInfoIndex: callInfoIndex,
 		CallTokenID:   tokenID,
@@ -267,7 +268,7 @@ func NewCsvAccount(acc *tron.HTTPAccount) *CsvAccount {
 	name, _ := hex.DecodeString(acc.AccountName)
 	return &CsvAccount{
 		AccountName: string(name),
-		Address:     Hex2TAddr(acc.Address),
+		Address:     tron.Hex2TAddr(acc.Address),
 		Type:        acc.AccountType,
 		CreateTime:  acc.CreateTime / 1000,
 	}
@@ -318,7 +319,7 @@ func NewCsvContract(c *tron.HTTPContract) *CsvContract {
 		implementsAnyOf(hashes, "approve(address,uint256)")
 
 	return &CsvContract{
-		Address:           Hex2TAddr(c.ContractAddress),
+		Address:           tron.Hex2TAddr(c.ContractAddress),
 		Bytecode:          c.Bytecode,
 		FunctionSighashes: strings.Join(hashes, ";"),
 		IsErc20:           isErc20,
@@ -328,7 +329,7 @@ func NewCsvContract(c *tron.HTTPContract) *CsvContract {
 		// append
 		ContractName:               c.Name,
 		ConsumeUserResourcePercent: c.ConsumeUserResourcePercent,
-		OriginAddress:              Hex2TAddr(c.OriginAddress),
+		OriginAddress:              tron.Hex2TAddr(c.OriginAddress),
 		OriginEnergyLimit:          c.OriginEnergyLimit,
 	}
 }
@@ -346,16 +347,128 @@ func implementsAnyOf(hashes []string, sigStrs ...string) bool {
 	return false
 }
 
-// CsvReceipt is a standard EVM contract token
+// CsvTokens is a standard EVM contract token
 type CsvTokens struct {
 	Address     string `csv:"address"`
 	Symbol      string `csv:"symbol"`
 	Name        string `csv:"name"`
-	Decimals    bool   `csv:"decimals"`
-	TotalSupply bool   `csv:"total_supply"`
+	Decimals    uint64 `csv:"decimals"`
+	TotalSupply uint64 `csv:"total_supply"`
 	BlockNumber uint64 `csv:"block_number"`
 }
 
-// func NewCsvTokens(blockNum uint64, ) *CsvTokens {
-// 	return
-// }
+func NewCsvTokens(cli *tron.TronClient, contract *tron.HTTPContract) *CsvTokens {
+	contractAddr := contract.ContractAddress
+	callerAddr := contract.OriginAddress
+
+	symbolResult := cli.CallContract(contractAddr, callerAddr, 0, 1000,
+		"symbol()",
+	)
+	symbol := ParseSymbol(symbolResult.ConstantResult)
+
+	nameResult := cli.CallContract(contractAddr, callerAddr, 0, 1000,
+		"name()",
+	)
+	name := ParseName(nameResult.ConstantResult)
+
+	decimalsResult := cli.CallContract(contractAddr, callerAddr, 0, 1000,
+		"decimals()",
+	)
+	decimals := ParseDecimals(decimalsResult.ConstantResult)
+
+	totalSupplyResult := cli.CallContract(contractAddr, callerAddr, 0, 1000,
+		"totalSupply()",
+	)
+	totalSupply := ParseTotalSupply(totalSupplyResult.ConstantResult)
+
+	block := cli.GetJSONBlockByNumberWithTxIDs(nil)
+
+	return &CsvTokens{
+		Address:     contractAddr,
+		Symbol:      symbol,
+		Name:        name,
+		Decimals:    *decimals,
+		TotalSupply: *totalSupply,
+		BlockNumber: uint64(*block.Number),
+	}
+}
+
+func ParseSymbol(contractResults []string) string {
+	if len(contractResults) == 0 {
+		panic("failed to parse symbol")
+	}
+
+	result := contractResults[0]
+	bigLlen, ok := new(big.Int).SetString(result[0:64], 16)
+	if !ok {
+		// TODO: warn log here
+		return ""
+	}
+	l, ok := new(big.Int).SetString(result[64:64+bigLlen.Int64()*2], 16)
+	if !ok {
+		// TODO: warn log here
+		return ""
+	}
+	hexStr := result[64+bigLlen.Int64()*2 : 64+bigLlen.Int64()*2+l.Int64()*2]
+	decoded, err := hex.DecodeString(hexStr)
+	if err != nil {
+		// TODO: err log here
+		return ""
+	}
+	return string(decoded)
+}
+
+func ParseName(contractResults []string) string {
+	if len(contractResults) == 0 {
+		panic("failed to parse symbol")
+	}
+
+	result := contractResults[0]
+	bigLlen, ok := new(big.Int).SetString(result[0:64], 16)
+	if !ok {
+		// TODO: warn log here
+		return ""
+	}
+	l, ok := new(big.Int).SetString(result[64:64+bigLlen.Int64()*2], 16)
+	if !ok {
+		// TODO: warn log here
+		return ""
+	}
+	hexStr := result[64+bigLlen.Int64()*2 : 64+bigLlen.Int64()*2+l.Int64()*2]
+	decoded, err := hex.DecodeString(hexStr)
+	if err != nil {
+		// TODO: err log here
+		return ""
+	}
+	return string(decoded)
+}
+
+func ParseDecimals(contractResults []string) *uint64 {
+	if len(contractResults) == 0 {
+		panic("failed to parse symbol")
+	}
+
+	result, ok := new(big.Int).SetString(contractResults[0], 16)
+	if !ok {
+		// TODO: err log here
+		return nil
+	}
+
+	rtn := result.Uint64()
+	return &rtn
+}
+
+func ParseTotalSupply(contractResults []string) *uint64 {
+	if len(contractResults) == 0 {
+		panic("failed to parse symbol")
+	}
+
+	result, ok := new(big.Int).SetString(contractResults[0], 16)
+	if !ok {
+		// TODO: err log here
+		return nil
+	}
+
+	rtn := result.Uint64()
+	return &rtn
+}

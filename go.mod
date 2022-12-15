@@ -6,6 +6,7 @@ require (
 	github.com/btcsuite/btcd/btcutil v1.1.2
 	github.com/ethereum/go-ethereum v1.10.25
 	github.com/gin-gonic/gin v1.8.1
+	github.com/holiman/uint256 v1.2.1
 	github.com/jszwec/csvutil v1.7.1
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/pflag v1.0.5
