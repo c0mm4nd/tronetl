@@ -49,6 +49,11 @@ func NewCsvTransaction(blockTimestamp uint64, txIndex int, jsontx *tron.JSONTran
 		txType = httptx.RawData.Contract[0].ContractType
 	}
 
+	status := ""
+	if len(httptx.Ret) > 0 {
+		status = httptx.Ret[0].ContractRet
+	}
+
 	return &CsvTransaction{
 		Hash:                 jsontx.Hash[2:],
 		Nonce:                "", //tx.Nonce,
@@ -66,7 +71,7 @@ func NewCsvTransaction(blockTimestamp uint64, txIndex int, jsontx *tron.JSONTran
 		MaxPriorityFeePerGas: "",                    //tx.MaxPriorityFeePerGas.String(),
 		TransactionType:      txType,                //jsontx.Type[2:],
 
-		Status: httptx.Ret[0].ContractRet, // can be SUCCESS REVERT
+		Status: status, // can be SUCCESS REVERT
 
 		// appendix
 		TransactionTimestamp:  httptx.RawData.Timestamp / 1000,  // float64(httptx.RawData.Timestamp) * 1 / 1000,
