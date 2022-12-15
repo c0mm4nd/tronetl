@@ -30,7 +30,7 @@ func ExportAddressDetails(options *ExportAddressDetailsOptions) {
 		for scanner.Scan() {
 			line := scanner.Text()
 			for _, sub := range strings.Split(line, ",") {
-				if sub[0] == 'T' && len(sub) == 34 {
+				if len(sub) > 0 && sub[0] == 'T' && len(sub) == 34 {
 					// =Taddr
 					allAddrs = append(allAddrs, tron.Tstring2HexAddr(sub))
 				}

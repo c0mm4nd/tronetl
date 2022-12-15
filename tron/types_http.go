@@ -146,7 +146,7 @@ type HTTPPermision struct {
 	Operations     string `json:"operations,omitempty"`
 	Keys           []*struct {
 		Address string `json:"address,omitempty"`
-		Weight  string `json:"weight,omitempty"`
+		Weight  int64  `json:"weight,omitempty"`
 	} `json:"keys,omitempty"`
 }
 

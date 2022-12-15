@@ -147,7 +147,7 @@ func main() {
 			var err error
 			var addrSrc *os.File
 			if *addrsSource != "" && *addrsSource != "-" {
-				addrSrc, err = os.Create(*addrsSource)
+				addrSrc, err = os.Open(*addrsSource)
 				chk(err)
 			}
 

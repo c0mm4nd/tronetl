@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/hex"
+	"encoding/json"
+	"log"
 	"math/big"
 	"strings"
 
@@ -370,82 +372,109 @@ func NewCsvTokens(cli *tron.TronClient, contract *tron.HTTPContract) *CsvTokens 
 		"symbol()",
 	)
 	symbol := ParseSymbol(symbolResult.ConstantResult)
+	if symbol == nil {
+		log.Println("failed to parse symbol for contract", tron.Tstring2HexAddr(contractAddr))
+		result, _ := json.Marshal(symbolResult)
+		log.Println(string(result))
+		return nil
+	}
 
 	nameResult := cli.CallContract(contractAddr, callerAddr, 0, 1000,
 		"name()",
 	)
 	name := ParseName(nameResult.ConstantResult)
+	if name == nil {
+		log.Println("failed to parse name for contract", tron.Tstring2HexAddr(contractAddr))
+		result, _ := json.Marshal(nameResult)
+		log.Println(string(result))
+		return nil
+	}
 
 	decimalsResult := cli.CallContract(contractAddr, callerAddr, 0, 1000,
 		"decimals()",
 	)
 	decimals := ParseDecimals(decimalsResult.ConstantResult)
+	if decimals == nil {
+		log.Println("failed to parse decimals for contract", tron.Tstring2HexAddr(contractAddr))
+		result, _ := json.Marshal(decimalsResult)
+		log.Println(string(result))
+		return nil
+	}
 
 	totalSupplyResult := cli.CallContract(contractAddr, callerAddr, 0, 1000,
 		"totalSupply()",
 	)
 	totalSupply := ParseTotalSupply(totalSupplyResult.ConstantResult)
+	if totalSupply == nil {
+		log.Println("failed to parse totalSupply for contract", tron.Tstring2HexAddr(contractAddr))
+		result, _ := json.Marshal(totalSupplyResult)
+		log.Println(string(result))
+		return nil
+	}
 
 	block := cli.GetJSONBlockByNumberWithTxIDs(nil)
 
 	return &CsvTokens{
 		Address:     contractAddr,
-		Symbol:      symbol,
-		Name:        name,
+		Symbol:      *symbol,
+		Name:        *name,
 		Decimals:    *decimals,
 		TotalSupply: *totalSupply,
 		BlockNumber: uint64(*block.Number),
 	}
 }
 
-func ParseSymbol(contractResults []string) string {
+func ParseSymbol(contractResults []string) *string {
 	if len(contractResults) == 0 {
-		panic("failed to parse symbol")
+		return nil
 	}
 
 	result := contractResults[0]
 	bigLlen, ok := new(big.Int).SetString(result[0:64], 16)
 	if !ok {
 		// TODO: warn log here
-		return ""
+		return nil
 	}
 	l, ok := new(big.Int).SetString(result[64:64+bigLlen.Int64()*2], 16)
 	if !ok {
 		// TODO: warn log here
-		return ""
+		return nil
 	}
 	hexStr := result[64+bigLlen.Int64()*2 : 64+bigLlen.Int64()*2+l.Int64()*2]
 	decoded, err := hex.DecodeString(hexStr)
 	if err != nil {
 		// TODO: err log here
-		return ""
+		return nil
 	}
-	return string(decoded)
+	rtn := string(decoded)
+	return &rtn
 }
 
-func ParseName(contractResults []string) string {
+func ParseName(contractResults []string) *string {
 	if len(contractResults) == 0 {
-		panic("failed to parse symbol")
+		return nil
 	}
 
 	result := contractResults[0]
 	bigLlen, ok := new(big.Int).SetString(result[0:64], 16)
 	if !ok {
 		// TODO: warn log here
-		return ""
+		return nil
 	}
 	l, ok := new(big.Int).SetString(result[64:64+bigLlen.Int64()*2], 16)
 	if !ok {
 		// TODO: warn log here
-		return ""
+		return nil
 	}
 	hexStr := result[64+bigLlen.Int64()*2 : 64+bigLlen.Int64()*2+l.Int64()*2]
 	decoded, err := hex.DecodeString(hexStr)
 	if err != nil {
 		// TODO: err log here
-		return ""
+		return nil
 	}
-	return string(decoded)
+
+	rtn := string(decoded)
+	return &rtn
 }
 
 func ParseDecimals(contractResults []string) *uint64 {
