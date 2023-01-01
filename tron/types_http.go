@@ -48,12 +48,12 @@ type HTTPTxInfoLog struct {
 
 // HTTPInternalTransaction is a internal transaction result from HTTP RESTful API
 type HTTPInternalTransaction struct {
-	TransactionHash   string                                  `json:"hash,omitempty"`
-	CallerAddress     string                                  `json:"caller_address,omitempty"`
-	TransferToAddress string                                  `json:"transferTo_address,omitempty"`
-	CallValueInfo     []*HTTPInternalTransactionCallValueInfo `json:"callValueInfo,omitempty"`
-	Note              string                                  `json:"note,omitempty"`
-	Rejected          bool                                    `json:"rejected,omitempty"`
+	InternalTransactionHash string                                  `json:"hash,omitempty"`
+	CallerAddress           string                                  `json:"caller_address,omitempty"`
+	TransferToAddress       string                                  `json:"transferTo_address,omitempty"`
+	CallValueInfo           []*HTTPInternalTransactionCallValueInfo `json:"callValueInfo,omitempty"`
+	Note                    string                                  `json:"note,omitempty"`
+	Rejected                bool                                    `json:"rejected,omitempty"`
 }
 
 // HTTPInternalTransactionCallValueInfo is a field in HTTPInternalTransaction

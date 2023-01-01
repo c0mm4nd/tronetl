@@ -198,25 +198,27 @@ func NewCsvLog(blockNumber uint64, txHash string, logIndex uint, log *tron.HTTPT
 
 // CsvInternalTx is a EVM smart contract internal transaction
 type CsvInternalTx struct {
-	TransactionHash   string `csv:"transaction_hash"`
-	Index             uint   `csv:"internal_index"`
-	CallerAddress     string `csv:"caller_address"`
-	TransferToAddress string `csv:"transferTo_address"`
-	CallInfoIndex     uint   `csv:"call_info_index"`
-	CallTokenID       string `csv:"call_token_id"`
-	CallValue         int64  `csv:"call_value"`
-	Note              string `csv:"note"`
-	Rejected          bool   `csv:"rejected"`
+	TransactionHash         string `csv:"transaction_hash"`
+	Index                   uint   `csv:"internal_index"`
+	InternalTransactionHash string `csv:"internal_hash"`
+	CallerAddress           string `csv:"caller_address"`
+	TransferToAddress       string `csv:"transferTo_address"`
+	CallInfoIndex           uint   `csv:"call_info_index"`
+	CallTokenID             string `csv:"call_token_id"`
+	CallValue               int64  `csv:"call_value"`
+	Note                    string `csv:"note"`
+	Rejected                bool   `csv:"rejected"`
 }
 
 // NewCsvInternalTx creates a new CsvInternalTx
-func NewCsvInternalTx(index uint, itx *tron.HTTPInternalTransaction, callInfoIndex uint, tokenID string, value int64) *CsvInternalTx {
+func NewCsvInternalTx(txHash string, index uint, itx *tron.HTTPInternalTransaction, callInfoIndex uint, tokenID string, value int64) *CsvInternalTx {
 
 	return &CsvInternalTx{
-		TransactionHash:   itx.TransactionHash,
-		Index:             index,
-		CallerAddress:     tron.EnsureTAddr(itx.CallerAddress),
-		TransferToAddress: tron.EnsureTAddr(itx.TransferToAddress),
+		TransactionHash:         txHash,
+		Index:                   index,
+		InternalTransactionHash: itx.InternalTransactionHash,
+		CallerAddress:           tron.EnsureTAddr(itx.CallerAddress),
+		TransferToAddress:       tron.EnsureTAddr(itx.TransferToAddress),
 		// CallValueInfo:     strings.Join(callValues, ";"),
 		CallInfoIndex: callInfoIndex,
 		CallTokenID:   tokenID,
