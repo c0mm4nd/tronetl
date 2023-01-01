@@ -26,7 +26,7 @@ The block structure is as follows:
 | extra_data        | always `""`                                  |
 | gas_limit         | bigint                                       |
 | gas_used          | bigint                                       |
-| timestamp         | uint64, the unit is ms                       |
+| timestamp         | uint64, the unit is second                   |
 | transaction_count | int                                          |
 | base_fee_per_gas  | always `""`                                  |
 
@@ -62,11 +62,11 @@ The TRX transaction data structure is as follows, here it mainly follows the tra
 
 Increase:
 
-| Column                 | Type                   |
-| ---------------------- | ---------------------- |
-| transaction_timestamp  | uint64, unit is ms     |
-| transaction_expiration | uint64, the unit is ms |
-| fee_limit              | bigint                 |
+| Column                 | Type                       |
+| ---------------------- | -------------------------- |
+| transaction_timestamp  | uint64, unit is second     |
+| transaction_expiration | uint64, the unit is second |
+| fee_limit              | bigint                     |
 
 
 For details about event types, please refer to the [system-contracts chapter in the official document](https://tronprotocol.github.io/documentation-en/mechanism-algorithm/system-contracts/), and functions can be added later as needed.

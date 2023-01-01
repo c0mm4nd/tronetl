@@ -25,7 +25,7 @@
 | extra_data        | 始终为`""`                       |
 | gas_limit         | bigint                           |
 | gas_used          | bigint                           |
-| timestamp         | uint64，单位为ms                 |
+| timestamp         | uint64，单位为秒                 |
 | transaction_count | int                              |
 | base_fee_per_gas  | 始终为`""`                       |
 
