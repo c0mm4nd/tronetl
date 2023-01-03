@@ -33,21 +33,31 @@ type ExportTransferOptions struct {
 func ExportTransfers(options *ExportTransferOptions) {
 	cli := tron.NewTronClient(options.ProviderURI)
 
-	tfWriter := csv.NewWriter(options.tfOutput)
-	defer tfWriter.Flush()
-	tfEncoder := csvutil.NewEncoder(tfWriter)
+	var tfEncoder, logEncoder, internalTxEncoder, receiptEncoder *csvutil.Encoder
 
-	logWriter := csv.NewWriter(options.logOutput)
-	defer logWriter.Flush()
-	logEncoder := csvutil.NewEncoder(logWriter)
+	if options.tfOutput != nil {
+		tfWriter := csv.NewWriter(options.tfOutput)
+		defer tfWriter.Flush()
+		tfEncoder = csvutil.NewEncoder(tfWriter)
+	}
 
-	internalTxWriter := csv.NewWriter(options.internalTxOutput)
-	defer internalTxWriter.Flush()
-	internalTxEncoder := csvutil.NewEncoder(internalTxWriter)
+	if options.logOutput != nil {
+		logWriter := csv.NewWriter(options.logOutput)
+		defer logWriter.Flush()
+		logEncoder = csvutil.NewEncoder(logWriter)
+	}
 
-	receiptWriter := csv.NewWriter(options.receiptOutput)
-	defer internalTxWriter.Flush()
-	receiptEncoder := csvutil.NewEncoder(receiptWriter)
+	if options.internalTxOutput != nil {
+		internalTxWriter := csv.NewWriter(options.internalTxOutput)
+		defer internalTxWriter.Flush()
+		internalTxEncoder = csvutil.NewEncoder(internalTxWriter)
+	}
+
+	if options.receiptOutput != nil {
+		receiptWriter := csv.NewWriter(options.receiptOutput)
+		defer receiptWriter.Flush()
+		receiptEncoder = csvutil.NewEncoder(receiptWriter)
+	}
 
 	filterLogContracts := make([]string, len(options.Contracts))
 	for i, addr := range options.Contracts {
@@ -106,7 +116,7 @@ func ExportTransfers(options *ExportTransferOptions) {
 			for txIndex, txInfo := range txInfos {
 				txHash := txInfo.ID
 
-				if options.receiptOutput != nil {
+				if receiptEncoder != nil {
 					receiptEncoder.Encode(NewCsvReceipt(number, txHash, uint(txIndex), txInfo.ContractAddress, txInfo.Receipt))
 				}
 
@@ -115,7 +125,7 @@ func ExportTransfers(options *ExportTransferOptions) {
 						continue
 					}
 
-					if options.tfOutput != nil {
+					if tfEncoder != nil {
 						tf := ExtractTransferFromLog(log.Topics, log.Data, log.Address, uint(logIndex), txHash, number)
 						if tf != nil {
 							err := tfEncoder.Encode(tf)
@@ -123,14 +133,14 @@ func ExportTransfers(options *ExportTransferOptions) {
 						}
 					}
 
-					if options.logOutput != nil {
+					if logEncoder != nil {
 						err := logEncoder.Encode(NewCsvLog(number, txHash, uint(logIndex), log))
 						chk(err)
 					}
 
 				}
 
-				if options.internalTxOutput != nil {
+				if internalTxEncoder != nil {
 					for internalIndex, internalTx := range txInfo.InternalTransactions {
 						for callInfoIndex, callInfo := range internalTx.CallValueInfo {
 							err := internalTxEncoder.Encode(NewCsvInternalTx(txHash, uint(internalIndex), internalTx, uint(callInfoIndex), callInfo.TokenID, callInfo.CallValue))

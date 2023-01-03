@@ -60,27 +60,8 @@ func main() {
 		Short: "export blocks, with the blocks' trx and trc10 transactions",
 		Run: func(cmd *cobra.Command, args []string) {
 			var err error
-			var blksOut, txsOut, trc10Out *os.File
-			if *blksOutput != "-" {
-				blksOut, err = os.Create(*blksOutput)
-				chk(err)
-			}
 
-			if *txsOutput != "-" {
-				txsOut, err = os.Create(*txsOutput)
-				chk(err)
-			}
-
-			if *trc10Output != "-" {
-				trc10Out, err = os.Create(*trc10Output)
-				chk(err)
-			}
-
-			ExportBlocksAndTransactions(&ExportBlocksAndTransactionsOptions{
-				blksOutput:  blksOut,
-				txsOutput:   txsOut,
-				trc10Output: trc10Out,
-
+			options := &ExportBlocksAndTransactionsOptions{
 				ProviderURI: *providerURI,
 
 				StartBlock: *startBlock,
@@ -88,7 +69,24 @@ func main() {
 
 				StartTimestamp: *startTimestamp,
 				EndTimestamp:   *endTimestamp,
-			})
+			}
+
+			if *blksOutput != "-" {
+				options.blksOutput, err = os.Create(*blksOutput)
+				chk(err)
+			}
+
+			if *txsOutput != "-" {
+				options.txsOutput, err = os.Create(*txsOutput)
+				chk(err)
+			}
+
+			if *trc10Output != "-" {
+				options.trc10Output, err = os.Create(*trc10Output)
+				chk(err)
+			}
+
+			ExportBlocksAndTransactions(options)
 		},
 	}
 	exportBlocksAndTransactionsCmd.Flags().AddFlagSet(cmdBlocksAndTxs)
@@ -98,36 +96,8 @@ func main() {
 		Short: "export smart contract token's transfers",
 		Run: func(cmd *cobra.Command, args []string) {
 			var err error
-			var tfOut *os.File
-			if *tfOutput != "-" {
-				tfOut, err = os.Create(*tfOutput)
-				chk(err)
-			}
 
-			var logOut *os.File
-			if *logOutput != "-" {
-				logOut, err = os.Create(*logOutput)
-				chk(err)
-			}
-
-			var internalTxOut *os.File
-			if *internalTxOutput != "-" {
-				internalTxOut, err = os.Create(*internalTxOutput)
-				chk(err)
-			}
-
-			var receiptOut *os.File
-			if *receiptOutput != "-" {
-				receiptOut, err = os.Create(*receiptOutput)
-				chk(err)
-			}
-
-			ExportTransfers(&ExportTransferOptions{
-				tfOutput:         tfOut,
-				logOutput:        logOut,
-				internalTxOutput: internalTxOut,
-				receiptOutput:    receiptOut,
-
+			options := &ExportTransferOptions{
 				ProviderURI: *providerURI,
 				StartBlock:  *startBlock,
 				EndBlock:    *endBlock,
@@ -135,7 +105,29 @@ func main() {
 				StartTimestamp: *startTimestamp,
 				EndTimestamp:   *endTimestamp,
 				Contracts:      *filterContracts,
-			})
+			}
+
+			if *tfOutput != "-" {
+				options.tfOutput, err = os.Create(*tfOutput)
+				chk(err)
+			}
+
+			if *logOutput != "-" {
+				options.logOutput, err = os.Create(*logOutput)
+				chk(err)
+			}
+
+			if *internalTxOutput != "-" {
+				options.internalTxOutput, err = os.Create(*internalTxOutput)
+				chk(err)
+			}
+
+			if *receiptOutput != "-" {
+				options.receiptOutput, err = os.Create(*receiptOutput)
+				chk(err)
+			}
+
+			ExportTransfers(options)
 		},
 	}
 	exportTokenTransfersCmd.Flags().AddFlagSet(cmdTokenTf)
@@ -145,40 +137,34 @@ func main() {
 		Short: "export the addresses' type and smart contract related details (require T-address format)",
 		Run: func(cmd *cobra.Command, args []string) {
 			var err error
-			var addrSrc *os.File
-			if *addrsSource != "" && *addrsSource != "-" {
-				addrSrc, err = os.Open(*addrsSource)
-				chk(err)
-			}
 
-			var accountOut *os.File
-			if *accountsOutput != "-" {
-				accountOut, err = os.Create(*accountsOutput)
-				chk(err)
-			}
-
-			var contractsOut *os.File
-			if *contractsOutput != "-" {
-				contractsOut, err = os.Create(*contractsOutput)
-				chk(err)
-			}
-
-			var tokensOut *os.File
-			if *tokensOutput != "-" {
-				tokensOut, err = os.Create(*tokensOutput)
-				chk(err)
-			}
-
-			ExportAddressDetails(&ExportAddressDetailsOptions{
-				addrSource:      addrSrc,
-				accountsOutput:  accountOut,
-				contractsOutput: contractsOut,
-				tokensOutput:    tokensOut,
+			options := &ExportAddressDetailsOptions{
+				ProviderURI: *providerURI,
 
 				Addresses: *addrs,
+			}
 
-				ProviderURI: *providerURI,
-			})
+			if *addrsSource != "" && *addrsSource != "-" {
+				options.addrSource, err = os.Open(*addrsSource)
+				chk(err)
+			}
+
+			if *accountsOutput != "-" {
+				options.accountsOutput, err = os.Create(*accountsOutput)
+				chk(err)
+			}
+
+			if *contractsOutput != "-" {
+				options.contractsOutput, err = os.Create(*contractsOutput)
+				chk(err)
+			}
+
+			if *tokensOutput != "-" {
+				options.tokensOutput, err = os.Create(*tokensOutput)
+				chk(err)
+			}
+
+			ExportAddressDetails(options)
 		},
 	}
 	exportAddressDetailsCmd.Flags().AddFlagSet(cmdAddrDetails)
