@@ -82,6 +82,7 @@ Flags:
       --internal-tx-output string   the CSV file for internal transaction outputs, use - to omit (default "internal_transactions.csv")
       --logs-output string          the CSV file for transaction log outputs, use - to omit (default "logs.csv")
       --provider-uri string         the base uri of the tron fullnode (without port) (default "http://localhost")
+      --receipts-output string      the CSV file for transaction receipt outputs, use - to omit (default "receipts.csv")
       --start-block uint            the starting block number
       --start-timestamp uint        the starting block's timestamp (in UTC)
       --transfers-output string     the CSV file for token transfer outputs, use - to omit (default "token_transfers.csv")
