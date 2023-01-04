@@ -198,6 +198,7 @@ func NewCsvLog(blockNumber uint64, txHash string, logIndex uint, log *tron.HTTPT
 
 // CsvInternalTx is a EVM smart contract internal transaction
 type CsvInternalTx struct {
+	BlockNumber             uint64 `csv:"block_number"`
 	TransactionHash         string `csv:"transaction_hash"`
 	Index                   uint   `csv:"internal_index"`
 	InternalTransactionHash string `csv:"internal_hash"`
@@ -211,9 +212,10 @@ type CsvInternalTx struct {
 }
 
 // NewCsvInternalTx creates a new CsvInternalTx
-func NewCsvInternalTx(txHash string, index uint, itx *tron.HTTPInternalTransaction, callInfoIndex uint, tokenID string, value int64) *CsvInternalTx {
+func NewCsvInternalTx(blockNum uint64, txHash string, index uint, itx *tron.HTTPInternalTransaction, callInfoIndex uint, tokenID string, value int64) *CsvInternalTx {
 
 	return &CsvInternalTx{
+		BlockNumber:             blockNum,
 		TransactionHash:         txHash,
 		Index:                   index,
 		InternalTransactionHash: itx.InternalTransactionHash,

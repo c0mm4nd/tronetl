@@ -129,6 +129,7 @@ txinfo内部交易数据结构如下：
 
 | Column             | Type                                 |
 | ------------------ | ------------------------------------ |
+| block_number       | uint64                               |
 | transaction_hash   | uint64                               |
 | internal_index     | uint                                 |
 | caller_address     | address                              |

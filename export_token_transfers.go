@@ -143,7 +143,7 @@ func ExportTransfers(options *ExportTransferOptions) {
 				if internalTxEncoder != nil {
 					for internalIndex, internalTx := range txInfo.InternalTransactions {
 						for callInfoIndex, callInfo := range internalTx.CallValueInfo {
-							err := internalTxEncoder.Encode(NewCsvInternalTx(txHash, uint(internalIndex), internalTx, uint(callInfoIndex), callInfo.TokenID, callInfo.CallValue))
+							err := internalTxEncoder.Encode(NewCsvInternalTx(number, txHash, uint(internalIndex), internalTx, uint(callInfoIndex), callInfo.TokenID, callInfo.CallValue))
 							chk(err)
 						}
 

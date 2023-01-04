@@ -130,6 +130,7 @@ The txinfo's internal transaction data structure is as follows:
 
 | Column             | Type                                      |
 | ------------------ | ----------------------------------------- |
+| block_number       | uint64                                    |
 | transaction_hash   | hex_string                                |
 | internal_index     | uint                                      |
 | caller_address     | address                                   |
