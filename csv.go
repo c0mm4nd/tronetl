@@ -127,7 +127,7 @@ func NewCsvBlock(jsonblock *tron.JSONBlockWithTxs, httpblock *tron.HTTPBlock) *C
 		ExtraData:        "",
 		GasLimit:         jsonblock.GasLimit.ToInt().String(),
 		GasUsed:          jsonblock.GasUsed.ToInt().String(),
-		Timestamp:        uint64(*jsonblock.Timestamp) / 1000,
+		Timestamp:        uint64(httpblock.BlockHeader.RawData.Timestamp) / 1000,
 		TansactionCount:  len(jsonblock.Transactions),
 		BaseFeePerGas:    "", // block.BaseFeePerGas,
 
