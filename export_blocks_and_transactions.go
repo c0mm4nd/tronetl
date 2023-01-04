@@ -54,12 +54,13 @@ func ExportBlocksAndTransactions(options *ExportBlocksAndTransactionsOptions) {
 
 		jsonblock := cli.GetJSONBlockByNumberWithTxs(num)
 		httpblock := cli.GetHTTPBlockByNumber(num)
+		blockTime := uint64(httpblock.BlockHeader.RawData.Timestamp)
 		csvBlock := NewCsvBlock(jsonblock, httpblock)
 		if options.txsOutput != nil || options.trc10Output != nil {
 			for txIndex, jsontx := range jsonblock.Transactions {
 				httptx := httpblock.Transactions[txIndex]
 				if options.txsOutput != nil {
-					csvTx := NewCsvTransaction(uint64(*jsonblock.Timestamp), txIndex, &jsontx, &httptx)
+					csvTx := NewCsvTransaction(blockTime, txIndex, &jsontx, &httptx)
 					err := txsCsvEncoder.Encode(csvTx)
 					chk(err)
 				}
