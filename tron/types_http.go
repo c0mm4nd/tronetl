@@ -97,10 +97,16 @@ type HTTPTransaction struct {
 		Data          string          `json:"data,omitempty"`
 		Contract      []*ContractCall `json:"contract,omitempty"`
 		RefBlockBytes string          `json:"ref_block_bytes,omitempty"`
-		RefBlockHash  string          `json:"ref_block_hash,omitempty"`
-		Expiration    uint64          `json:"expiration,omitempty"`
-		Timestamp     uint64          `json:"timestamp,omitempty"`
-		FeeLimit      uint64          `json:"fee_limit,omitempty"`
+		// - The height of the transaction reference block, using the 6th to 8th (exclusive) bytes of the reference block height, a total of 2 bytes.
+		// The reference block is used in the TRON TAPOS mechanism, which can prevent a replay of a transaction on forks that do not include the referenced block.
+		// Generally the latest solidified block is used as the reference block.
+		RefBlockHash string `json:"ref_block_hash,omitempty"`
+		// - The hash of the transaction reference block, using the 8th to 16th (exclusive) bytes of the reference block hash, a total of 8 bytes.
+		// The reference block is used in the TRON TAPOS mechanism, which can prevent a replay of a transaction on forks that do not include the referenced block.
+		// Generally the latest solidified block is used as the reference block.
+		Expiration uint64 `json:"expiration,omitempty"`
+		Timestamp  uint64 `json:"timestamp,omitempty"`
+		FeeLimit   uint64 `json:"fee_limit,omitempty"`
 	} `json:"raw_data,omitempty"`
 	RawDataHex string `json:"raw_data_hex,omitempty"`
 }

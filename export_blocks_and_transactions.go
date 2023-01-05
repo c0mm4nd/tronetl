@@ -56,6 +56,7 @@ func ExportBlocksAndTransactions(options *ExportBlocksAndTransactionsOptions) {
 		httpblock := cli.GetHTTPBlockByNumber(num)
 		blockTime := uint64(httpblock.BlockHeader.RawData.Timestamp)
 		csvBlock := NewCsvBlock(jsonblock, httpblock)
+		blockHash := csvBlock.Hash
 		if options.txsOutput != nil || options.trc10Output != nil {
 			for txIndex, jsontx := range jsonblock.Transactions {
 				httptx := httpblock.Transactions[txIndex]
@@ -73,7 +74,7 @@ func ExportBlocksAndTransactions(options *ExportBlocksAndTransactionsOptions) {
 
 							err := json.Unmarshal(contractCall.Parameter.Value, &tfParams)
 							chk(err)
-							csvTf := NewCsvTRC10Transfer(number, txIndex, callIndex, &httpblock.Transactions[txIndex], &tfParams)
+							csvTf := NewCsvTRC10Transfer(blockHash, number, txIndex, callIndex, &httpblock.Transactions[txIndex], &tfParams)
 							err = trc10CsvEncoder.Encode(csvTf)
 							chk(err)
 						}

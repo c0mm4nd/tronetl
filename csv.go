@@ -156,11 +156,11 @@ type CsvTRC10Transfer struct {
 }
 
 // NewCsvTRC10Transfer creates a new CsvTRC10Transfer
-func NewCsvTRC10Transfer(blockNum uint64, txIndex, callIndex int, httpTx *tron.HTTPTransaction, tfParams *tron.TRC10TransferParams) *CsvTRC10Transfer {
+func NewCsvTRC10Transfer(blockHash string, blockNum uint64, txIndex, callIndex int, httpTx *tron.HTTPTransaction, tfParams *tron.TRC10TransferParams) *CsvTRC10Transfer {
 
 	return &CsvTRC10Transfer{
 		TransactionHash:   httpTx.TxID,
-		BlockHash:         httpTx.RawData.RefBlockHash,
+		BlockHash:         blockHash,
 		BlockNumber:       blockNum,
 		TransactionIndex:  txIndex,
 		ContractCallIndex: callIndex,
