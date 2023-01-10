@@ -89,7 +89,12 @@ func main() {
 				chk(err)
 			}
 
-			ExportBlocksAndTransactions(options)
+			if *workers == 0 {
+				ExportBlocksAndTransactions(options)
+			} else {
+				ExportBlocksAndTransactionsWithWorkers(options, *workers)
+			}
+
 		},
 	}
 	exportBlocksAndTransactionsCmd.Flags().AddFlagSet(cmdBlocksAndTxs)
