@@ -23,6 +23,8 @@ var rootCmd = &cobra.Command{
 }
 
 func main() {
+	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
+
 	nodeConfigs := pflag.NewFlagSet("node config", pflag.ExitOnError)
 	providerURI := nodeConfigs.String("provider-uri", "http://localhost", "the base uri of the tron fullnode (without port)")
 
@@ -31,6 +33,7 @@ func main() {
 	endBlock := defaults.Uint64("end-block", 0, "the ending block number")
 	startTimestamp := defaults.Uint64("start-timestamp", 0, "the starting block's timestamp (in UTC)")
 	endTimestamp := defaults.Uint64("end-timestamp", 0, "the ending block's timestamp (in UTC)")
+	workers := defaults.Uint("workers", 0, "the count of the workers in parallel")
 	defaults.AddFlagSet(nodeConfigs)
 
 	cmdBlocksAndTxs := pflag.NewFlagSet("export_blocks_and_transactions", pflag.ExitOnError)
@@ -127,7 +130,11 @@ func main() {
 				chk(err)
 			}
 
-			ExportTransfers(options)
+			if *workers == 0 {
+				ExportTransfers(options)
+			} else {
+				ExportTransfersWithWorkers(options, *workers)
+			}
 		},
 	}
 	exportTokenTransfersCmd.Flags().AddFlagSet(cmdTokenTf)

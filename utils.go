@@ -5,6 +5,7 @@ import (
 	"math/big"
 
 	"git.ngx.fi/c0mm4nd/tronetl/tron"
+	"github.com/jszwec/csvutil"
 )
 
 // locateStartBlock is a util for locating the start block by start timestamp
@@ -77,4 +78,18 @@ func locateEndBlock(cli *tron.TronClient, endTimestamp uint64) uint64 {
 	}
 
 	return estimateEndNumber
+}
+
+func createCSVEncodeCh(enc *csvutil.Encoder, maxWorker uint) chan any {
+	ch := make(chan any, maxWorker)
+	writeFn := func() {
+		for {
+			obj := <-ch
+			err := enc.Encode(obj)
+			chk(err)
+		}
+	}
+
+	go writeFn()
+	return ch
 }
