@@ -50,6 +50,8 @@ func ExportBlocksAndTransactions(options *ExportBlocksAndTransactionsOptions) {
 		trc10CsvEncoder = csvutil.NewEncoder(trc10CsvWriter)
 	}
 
+	log.Printf("try parsing blocks and transactions from block %d to %d", options.StartBlock, options.EndBlock)
+
 	for number := options.StartBlock; number <= options.EndBlock; number++ {
 		num := new(big.Int).SetUint64(number)
 
@@ -171,6 +173,4 @@ func ExportBlocksAndTransactionsWithWorkers(options *ExportBlocksAndTransactions
 	}
 
 	wg.Wait()
-
-	return
 }

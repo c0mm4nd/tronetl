@@ -300,6 +300,4 @@ func ExportTransfersWithWorkers(options *ExportTransferOptions, workers uint) {
 	}
 
 	wg.Wait()
-
-	return
 }
