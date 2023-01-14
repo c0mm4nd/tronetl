@@ -106,7 +106,7 @@ type HTTPTransaction struct {
 		// Generally the latest solidified block is used as the reference block.
 		Expiration uint64 `json:"expiration,omitempty"`
 		Timestamp  uint64 `json:"timestamp,omitempty"`
-		FeeLimit   uint64 `json:"fee_limit,omitempty"`
+		FeeLimit   int64 `json:"fee_limit,omitempty"` // can be neg
 	} `json:"raw_data,omitempty"`
 	RawDataHex string `json:"raw_data_hex,omitempty"`
 }

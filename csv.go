@@ -36,7 +36,7 @@ type CsvTransaction struct {
 	// appendix
 	TransactionTimestamp  uint64 `csv:"transaction_timestamp"`
 	TransactionExpiration uint64 `csv:"transaction_expiration"`
-	FeeLimit              uint64 `csv:"fee_limit"`
+	FeeLimit              int64 `csv:"fee_limit"`
 }
 
 // NewCsvTransaction creates a new CsvTransaction
