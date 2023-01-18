@@ -34,8 +34,8 @@ type CsvTransaction struct {
 	Status string
 
 	// appendix
-	TransactionTimestamp  uint64 `csv:"transaction_timestamp"`
-	TransactionExpiration uint64 `csv:"transaction_expiration"`
+	TransactionTimestamp  int64 `csv:"transaction_timestamp"`
+	TransactionExpiration int64 `csv:"transaction_expiration"`
 	FeeLimit              int64 `csv:"fee_limit"`
 }
 

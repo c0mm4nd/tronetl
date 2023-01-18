@@ -104,8 +104,8 @@ type HTTPTransaction struct {
 		// - The hash of the transaction reference block, using the 8th to 16th (exclusive) bytes of the reference block hash, a total of 8 bytes.
 		// The reference block is used in the TRON TAPOS mechanism, which can prevent a replay of a transaction on forks that do not include the referenced block.
 		// Generally the latest solidified block is used as the reference block.
-		Expiration uint64 `json:"expiration,omitempty"`
-		Timestamp  uint64 `json:"timestamp,omitempty"`
+		Expiration int64 `json:"expiration,omitempty"`
+		Timestamp  int64 `json:"timestamp,omitempty"`
 		FeeLimit   int64 `json:"fee_limit,omitempty"` // can be neg
 	} `json:"raw_data,omitempty"`
 	RawDataHex string `json:"raw_data_hex,omitempty"`
