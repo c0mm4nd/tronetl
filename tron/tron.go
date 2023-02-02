@@ -101,6 +101,10 @@ func (c *TronClient) GetHTTPBlockByNumber(number *big.Int) *HTTPBlock {
 }
 
 func (c *TronClient) GetTxInfosByNumber(number uint64) []HTTPTxInfo {
+	if number == 0 {
+		return []HTTPTxInfo{} // 0 height returns `{}` which is not a list
+	}
+
 	url := c.httpURI + "/wallet/gettransactioninfobyblocknum" // + "?visible=true"
 	payload, err := json.Marshal(map[string]any{
 		"num": number,
