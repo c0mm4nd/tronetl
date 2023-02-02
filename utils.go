@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"math/big"
+	"sync"
 
 	"git.ngx.fi/c0mm4nd/tronetl/tron"
 	"github.com/jszwec/csvutil"
@@ -80,11 +81,16 @@ func locateEndBlock(cli *tron.TronClient, endTimestamp uint64) uint64 {
 	return estimateEndNumber
 }
 
-func createCSVEncodeCh(enc *csvutil.Encoder, maxWorker uint) chan any {
+func createCSVEncodeCh(wg *sync.WaitGroup, enc *csvutil.Encoder, maxWorker uint) chan any {
+	wg.Add(1)
 	ch := make(chan any, maxWorker)
 	writeFn := func() {
 		for {
-			obj := <-ch
+			obj, ok := <-ch
+			if !ok {
+				wg.Done()
+				return
+			}
 			err := enc.Encode(obj)
 			chk(err)
 		}

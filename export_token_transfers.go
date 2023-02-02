@@ -168,33 +168,34 @@ func ExportTransfersWithWorkers(options *ExportTransferOptions, workers uint) {
 	cli := tron.NewTronClient(options.ProviderURI)
 
 	var tfEncCh, logEncCh, internalTxEncCh, receiptEncCh chan any
+	var receiverWG sync.WaitGroup
 
 	if options.tfOutput != nil {
 		tfWriter := csv.NewWriter(options.tfOutput)
 		defer tfWriter.Flush()
 		tfEncoder := csvutil.NewEncoder(tfWriter)
-		tfEncCh = createCSVEncodeCh(tfEncoder, workers)
+		tfEncCh = createCSVEncodeCh(&receiverWG, tfEncoder, workers)
 	}
 
 	if options.logOutput != nil {
 		logWriter := csv.NewWriter(options.logOutput)
 		defer logWriter.Flush()
 		logEncoder := csvutil.NewEncoder(logWriter)
-		logEncCh = createCSVEncodeCh(logEncoder, workers)
+		logEncCh = createCSVEncodeCh(&receiverWG, logEncoder, workers)
 	}
 
 	if options.internalTxOutput != nil {
 		internalTxWriter := csv.NewWriter(options.internalTxOutput)
 		defer internalTxWriter.Flush()
 		internalTxEncoder := csvutil.NewEncoder(internalTxWriter)
-		internalTxEncCh = createCSVEncodeCh(internalTxEncoder, workers)
+		internalTxEncCh = createCSVEncodeCh(&receiverWG, internalTxEncoder, workers)
 	}
 
 	if options.receiptOutput != nil {
 		receiptWriter := csv.NewWriter(options.receiptOutput)
 		defer receiptWriter.Flush()
 		receiptEncoder := csvutil.NewEncoder(receiptWriter)
-		receiptEncCh = createCSVEncodeCh(receiptEncoder, workers)
+		receiptEncCh = createCSVEncodeCh(&receiverWG, receiptEncoder, workers)
 	}
 
 	filterLogContracts := make([]string, len(options.Contracts))
@@ -293,11 +294,16 @@ func ExportTransfersWithWorkers(options *ExportTransferOptions, workers uint) {
 		wg.Done()
 	}
 
-	var wg sync.WaitGroup
+	var senderWG sync.WaitGroup
 	for workerID := uint(0); workerID < workers; workerID++ {
-		wg.Add(1)
-		go exportWork(&wg, workerID)
+		senderWG.Add(1)
+		go exportWork(&senderWG, workerID)
 	}
 
-	wg.Wait()
+	senderWG.Wait()
+	close(tfEncCh)
+	close(logEncCh)
+	close(internalTxEncCh)
+	close(receiptEncCh)
+	receiverWG.Wait()
 }

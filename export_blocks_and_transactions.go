@@ -99,26 +99,28 @@ func ExportBlocksAndTransactions(options *ExportBlocksAndTransactionsOptions) {
 func ExportBlocksAndTransactionsWithWorkers(options *ExportBlocksAndTransactionsOptions, workers uint) {
 	cli := tron.NewTronClient(options.ProviderURI)
 
+	var receiverWG sync.WaitGroup
+
 	var blksCsvEncCh, txsCsvEncCh, trc10CsvEncCh chan any
 	if options.blksOutput != nil {
 		blksCsvWriter := csv.NewWriter(options.blksOutput)
 		defer blksCsvWriter.Flush()
 		blksCsvEncoder := csvutil.NewEncoder(blksCsvWriter)
-		blksCsvEncCh = createCSVEncodeCh(blksCsvEncoder, workers)
+		blksCsvEncCh = createCSVEncodeCh(&receiverWG, blksCsvEncoder, workers)
 	}
 
 	if options.txsOutput != nil {
 		txsCsvWriter := csv.NewWriter(options.txsOutput)
 		defer txsCsvWriter.Flush()
 		txsCsvEncoder := csvutil.NewEncoder(txsCsvWriter)
-		txsCsvEncCh = createCSVEncodeCh(txsCsvEncoder, workers)
+		txsCsvEncCh = createCSVEncodeCh(&receiverWG, txsCsvEncoder, workers)
 	}
 
 	if options.trc10Output != nil {
 		trc10CsvWriter := csv.NewWriter(options.trc10Output)
 		defer trc10CsvWriter.Flush()
 		trc10CsvEncoder := csvutil.NewEncoder(trc10CsvWriter)
-		trc10CsvEncCh = createCSVEncodeCh(trc10CsvEncoder, workers)
+		trc10CsvEncCh = createCSVEncodeCh(&receiverWG, trc10CsvEncoder, workers)
 	}
 
 	log.Printf("try parsing blocks and transactions from block %d to %d", options.StartBlock, options.EndBlock)
@@ -166,11 +168,15 @@ func ExportBlocksAndTransactionsWithWorkers(options *ExportBlocksAndTransactions
 		wg.Done()
 	}
 
-	var wg sync.WaitGroup
+	var senderWG sync.WaitGroup
 	for workerID := uint(0); workerID < workers; workerID++ {
-		wg.Add(1)
-		go exportWork(&wg, workerID)
+		senderWG.Add(1)
+		go exportWork(&senderWG, workerID)
 	}
 
-	wg.Wait()
+	senderWG.Wait()
+	close(blksCsvEncCh)
+	close(txsCsvEncCh)
+	close(trc10CsvEncCh)
+	receiverWG.Wait()
 }
