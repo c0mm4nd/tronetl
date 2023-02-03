@@ -175,8 +175,14 @@ func ExportBlocksAndTransactionsWithWorkers(options *ExportBlocksAndTransactions
 	}
 
 	senderWG.Wait()
-	close(blksCsvEncCh)
-	close(txsCsvEncCh)
-	close(trc10CsvEncCh)
+	if options.blksOutput != nil {
+		close(blksCsvEncCh)
+	}
+	if options.txsOutput != nil {
+		close(txsCsvEncCh)
+	}
+	if trc10CsvEncCh != nil {
+		close(trc10CsvEncCh)
+	}
 	receiverWG.Wait()
 }

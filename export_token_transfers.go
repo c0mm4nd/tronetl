@@ -301,9 +301,18 @@ func ExportTransfersWithWorkers(options *ExportTransferOptions, workers uint) {
 	}
 
 	senderWG.Wait()
-	close(tfEncCh)
-	close(logEncCh)
-	close(internalTxEncCh)
-	close(receiptEncCh)
+	if options.tfOutput != nil {
+		close(tfEncCh)
+	}
+	if options.logOutput != nil {
+		close(logEncCh)
+	}
+	if options.internalTxOutput != nil {
+		close(internalTxEncCh)
+	}
+	if options.receiptOutput != nil {
+		close(receiptEncCh)
+	}
+
 	receiverWG.Wait()
 }
