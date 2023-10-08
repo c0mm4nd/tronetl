@@ -21,7 +21,9 @@ func locateStartBlock(cli *tron.TronClient, startTimestamp uint64) uint64 {
 			break
 		}
 		log.Println(half, block.Timestamp)
-		timestamp := uint64(*block.Timestamp / 1000)
+		var timestamp uint64
+		timestamp = uint64(*block.Timestamp)
+
 		if timestamp < startTimestamp && startTimestamp-timestamp < 60 {
 			break
 		}
@@ -57,7 +59,9 @@ func locateEndBlock(cli *tron.TronClient, endTimestamp uint64) uint64 {
 			break
 		}
 		log.Println(half, block.Timestamp)
-		timestamp := uint64(*block.Timestamp / 1000)
+		var timestamp uint64
+		timestamp = uint64(*block.Timestamp)
+
 		if timestamp > endTimestamp && timestamp-endTimestamp < 60 {
 			break
 		}

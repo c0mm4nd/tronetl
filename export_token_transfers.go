@@ -78,10 +78,10 @@ func ExportTransfers(options *ExportTransferOptions) {
 				break
 			}
 
-			blockTime := uint64(*block.Timestamp) / 1000
+			blockTime := uint64(*block.Timestamp)
 
 			if blockTime < options.StartTimestamp {
-				log.Printf("passed start block %d: %d", number, *block.Timestamp)
+				log.Printf("passed start block %d: %d (< %d)", number, *block.Timestamp, blockTime)
 				continue
 			}
 
@@ -99,10 +99,10 @@ func ExportTransfers(options *ExportTransferOptions) {
 				break
 			}
 
-			blockTime := uint64(*block.Timestamp) / 1000
+			blockTime := uint64(*block.Timestamp)
 
 			if blockTime > options.EndBlock {
-				log.Printf("passed end block %d: %d", number, *block.Timestamp)
+				log.Printf("passed end block %d: %d (> %d)", number, *block.Timestamp, blockTime)
 				continue
 			}
 
@@ -214,7 +214,7 @@ func ExportTransfersWithWorkers(options *ExportTransferOptions, workers uint) {
 				break
 			}
 
-			blockTime := uint64(*block.Timestamp) / 1000
+			blockTime := uint64(*block.Timestamp)
 
 			if blockTime < options.StartTimestamp {
 				log.Printf("passed start block %d: %d", number, *block.Timestamp)
@@ -235,14 +235,14 @@ func ExportTransfersWithWorkers(options *ExportTransferOptions, workers uint) {
 				break
 			}
 
-			blockTime := uint64(*block.Timestamp) / 1000
+			blockTime := uint64(*block.Timestamp)
 
-			if blockTime > options.EndBlock {
+			if blockTime > options.EndTimestamp {
 				log.Printf("passed end block %d: %d", number, *block.Timestamp)
 				continue
 			}
 
-			options.StartBlock = number
+			options.EndBlock = number
 			break
 		}
 	}
