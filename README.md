@@ -4,9 +4,11 @@ TRONETL is a ETL helper to TRON protocol
 
 [中文版](./README.CHS.md)
 
+UPDATED: [Kylinkit](https://github.com/njublockchain/kylinkit) runs TRON ETL faster, which uses RustLang and works over gRPC, supporting all transfer-related and staking-related contract calls.
+
 ## Prerequisites
 
-1. RUN A FULLNODE WITH [TronDeploy](https://git.ngx.fi/c0mm4nd/trondeploy)!
+1. RUN A FULLNODE WITH [TronDeploy](https://github.com/c0mm4nd/trondeploy)!
 
 2. Make sure the output-directory was downloaded and node started
 
