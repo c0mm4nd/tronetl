@@ -1,4 +1,3 @@
-
 # Data Structure
 
 In the design of the data structure, the compatibility with the CSV format output by the tronetl project is first guaranteed.
@@ -16,7 +15,7 @@ The block structure is as follows:
 | nonce             | always `""`                                  |
 | sha3_uncles       | always `""`                                  |
 | logs_bloom        | always `"0"*512`                             |
-| transactions_root | hex_string                                   |
+| transaction_root | hex_string                                   |
 | state_root        | always `""`                                  |
 | receipts_root     | always `""`                                  |
 | miner             | address, actually stands for witness_address |
@@ -59,13 +58,14 @@ The TRX transaction data structure is as follows, here it mainly follows the tra
 | max_fee_per_gas          | always empty                     |
 | max_priority_fee_per_gas | always empty                     |
 | transaction_type         | string, refer to the event types |
+| status                   | string, can be SUCCESS or REVERT |
 
 Increase:
 
 | Column                 | Type                       |
 | ---------------------- | -------------------------- |
-| transaction_timestamp  | uint64, unit is second     |
-| transaction_expiration | uint64, the unit is second |
+| transaction_timestamp  | int64, unit is second     |
+| transaction_expiration | int64, the unit is second |
 | fee_limit              | bigint                     |
 
 
@@ -133,6 +133,7 @@ The txinfo's internal transaction data structure is as follows:
 | block_number       | uint64                                    |
 | transaction_hash   | hex_string                                |
 | internal_index     | uint                                      |
+| internal_hash      | hex_string                                |
 | caller_address     | address                                   |
 | transferTo_address | address                                   |
 | call_info_index    | uint, index of the call info              |
@@ -151,8 +152,9 @@ The tx receipt data structure is as follows:
 | ------------------- | ------------------------------------------------------ |
 | transaction_hash    | hex_string                                             |
 | transaction_index   | uint                                                   |
-| block_number        | hex_string                                             |
+| block_number        | uint64                                                 |
 | contract_address    | address (the called one, not newly created one as eth) |
+| energy_usage        | int64                                                  |
 | energy_fee          | int64                                                  |
 | origin_energy_usage | int64                                                  |
 | energy_usage_total  | int64                                                  |
@@ -162,16 +164,52 @@ The tx receipt data structure is as follows:
 
 ---
 
-## addresses.csv
+## accounts.csv
 
-The tx receipt data structure is as follows:
+The account data structure is as follows:
 
-| Column  | Type    |
-| ------- | ------- |
-| address | address |
+| Column        | Type    |
+| ------------- | ------- |
+| account_name  | string  |
+| address       | address |
+| type          | string  |
+| create_time   | int64   |
 
 ---
 
+## contracts.csv
+
+The contract data structure is as follows:
+
+| Column                       | Type    |
+| ---------------------------- | ------- |
+| address                      | address |
+| bytecode                     | string  |
+| function_sighashes           | string  |
+| is_erc20                     | bool    |
+| is_erc721                    | bool    |
+| block_number                 | uint64  |
+| contract_name                | string  |
+| consume_user_resource_percent| int     |
+| origin_address               | address |
+| origin_energy_limit          | int64   |
+
+---
+
+## tokens.csv
+
+The token data structure is as follows:
+
+| Column       | Type    |
+| ------------ | ------- |
+| address      | address |
+| symbol       | string  |
+| name         | string  |
+| decimals     | uint64  |
+| total_supply | uint64  |
+| block_number | uint64  |
+
+---
 
 ## Note
 
