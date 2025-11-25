@@ -73,12 +73,23 @@ func TestExportAddressDetailsWithWorkersOutputs(t *testing.T) {
 	}
 
 	// ensure the USDT contract row exists and is flagged as ERC20
+	header := ctrRows[0]
+	colIdx := -1
+	for i, h := range header {
+		if h == "is_erc20" {
+			colIdx = i
+			break
+		}
+	}
+	if colIdx == -1 {
+		t.Fatalf("is_erc20 column not found")
+	}
 	found := false
 	for i := 1; i < len(ctrRows); i++ {
 		if ctrRows[i][0] == "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t" {
 			found = true
-			if ctrRows[i][3] != "true" {
-				t.Fatalf("contract is_erc20 expected true, got %s", ctrRows[i][3])
+			if ctrRows[i][colIdx] != "true" {
+				t.Fatalf("contract is_erc20 expected true, got %s", ctrRows[i][colIdx])
 			}
 			break
 		}

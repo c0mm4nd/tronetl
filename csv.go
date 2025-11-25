@@ -292,6 +292,7 @@ type CsvContract struct {
 	FunctionSighashes string `csv:"function_sighashes"`
 	IsErc20           bool   `csv:"is_erc20"`
 	IsErc721          bool   `csv:"is_erc721"`
+	IsErc1155         bool   `csv:"is_erc1155"`
 	BlockNumber       uint64 `csv:"block_number"`
 
 	// append some...
@@ -301,7 +302,11 @@ type CsvContract struct {
 	OriginEnergyLimit          int64
 }
 
-var keccakHasher = sha3.NewLegacyKeccak256()
+func hashSignature(sig string) string {
+	h := sha3.NewLegacyKeccak256()
+	h.Write([]byte(sig))
+	return hex.EncodeToString(h.Sum(nil))
+}
 
 func NewCsvContract(c *tron.HTTPContract) *CsvContract {
 	hashes := make([]string, 0, len(c.Abi.Entrys))
@@ -312,8 +317,8 @@ func NewCsvContract(c *tron.HTTPContract) *CsvContract {
 			for _, input := range abi.Inputs {
 				types = append(types, input.Type)
 			}
-			funchash := keccakHasher.Sum([]byte(content + strings.Join(types, ",") + ")"))
-			hashes = append(hashes, hex.EncodeToString(funchash))
+			sig := content + strings.Join(types, ",") + ")"
+			hashes = append(hashes, hashSignature(sig))
 		}
 	}
 
@@ -329,12 +334,19 @@ func NewCsvContract(c *tron.HTTPContract) *CsvContract {
 		implementsAnyOf(hashes, "transfer(address,uint256)", "transferFrom(address,address,uint256)") &&
 		implementsAnyOf(hashes, "approve(address,uint256)")
 
+	isErc1155 := implementsAnyOf(hashes, "balanceOf(address,uint256)") &&
+		implementsAnyOf(hashes, "balanceOfBatch(address[],uint256[])") &&
+		implementsAnyOf(hashes, "safeTransferFrom(address,address,uint256,uint256,bytes)") &&
+		implementsAnyOf(hashes, "safeBatchTransferFrom(address,address,uint256[],uint256[],bytes)") &&
+		implementsAnyOf(hashes, "supportsInterface(bytes4)")
+
 	return &CsvContract{
 		Address:           tron.EnsureTAddr(c.ContractAddress),
 		Bytecode:          c.Bytecode,
 		FunctionSighashes: strings.Join(hashes, ";"),
 		IsErc20:           isErc20,
 		IsErc721:          isErc721,
+		IsErc1155:         isErc1155,
 		BlockNumber:       0,
 
 		// append
@@ -347,7 +359,7 @@ func NewCsvContract(c *tron.HTTPContract) *CsvContract {
 
 func implementsAnyOf(hashes []string, sigStrs ...string) bool {
 	for i := range sigStrs {
-		hash := hex.EncodeToString(keccakHasher.Sum([]byte(sigStrs[i])))
+		hash := hashSignature(sigStrs[i])
 		for j := range hashes {
 			if hashes[j] == hash {
 				return true
