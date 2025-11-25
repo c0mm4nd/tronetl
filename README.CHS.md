@@ -1,5 +1,7 @@
 # 波场网络数据解析 TronETL
 
+[![release](https://github.com/c0mm4nd/tronetl/actions/workflows/release.yml/badge.svg?branch=dev)](https://github.com/c0mm4nd/tronetl/actions/workflows/release.yml)
+
 TRONETL 是一个用于将波场（TRON）网络中的区块链数据解析为 CSV 格式文件的命令行工具。
 
 [English Version](./README.md)

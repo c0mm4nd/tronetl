@@ -1,5 +1,7 @@
 # TRONETL
 
+[![release](https://github.com/c0mm4nd/tronetl/actions/workflows/release.yml/badge.svg?branch=dev)](https://github.com/c0mm4nd/tronetl/actions/workflows/release.yml)
+
 TRONETL is a CLI tool for parsing blockchain data from the TRON network to CSV format files.
 
 [中文版](./README.CHS.md)
