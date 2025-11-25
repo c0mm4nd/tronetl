@@ -53,6 +53,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    # Publish on any push (branch or tag). Tagged pushes create real releases;
+    # branch pushes create/overwrite a prerelease per branch.
     if: github.event_name == 'push'
     steps:
       - name: Download all artifacts
@@ -75,8 +77,9 @@ jobs:
             echo "prerelease=false" >> "$GITHUB_OUTPUT"
             echo "make_latest=true" >> "$GITHUB_OUTPUT"
           else
-            echo "tag=continuous" >> "$GITHUB_OUTPUT"
-            echo "name=Continuous build (${GITHUB_SHA::7})" >> "$GITHUB_OUTPUT"
+            BRANCH_TAG="continuous-$(echo ${GITHUB_REF_NAME} | tr '/' '-')"
+            echo "tag=${BRANCH_TAG}" >> "$GITHUB_OUTPUT"
+            echo "name=Continuous build (${GITHUB_REF_NAME} ${GITHUB_SHA::7})" >> "$GITHUB_OUTPUT"
             echo "prerelease=true" >> "$GITHUB_OUTPUT"
             echo "make_latest=false" >> "$GITHUB_OUTPUT"
           fi
