@@ -2,9 +2,10 @@ name: Release
 
 on:
   push:
+    branches:
+      - '**'
     tags:
       - 'v*'
-
 permissions:
   contents: write
 
@@ -69,10 +70,21 @@ jobs:
       - name: Set release metadata
         id: meta
         run: |
-          echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
-          echo "name=Release ${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
-          echo "prerelease=false" >> "$GITHUB_OUTPUT"
-          echo "make_latest=true" >> "$GITHUB_OUTPUT"
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            TAG="${GITHUB_REF_NAME}"
+            NAME="Release ${GITHUB_REF_NAME}"
+            PRE=false
+            LATEST=true
+          else
+            TAG="${GITHUB_SHA::7}"
+            NAME="Push build ${GITHUB_REF_NAME} (${GITHUB_SHA::7})"
+            PRE=false
+            LATEST=false
+          fi
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "name=${NAME}" >> "$GITHUB_OUTPUT"
+          echo "prerelease=${PRE}" >> "$GITHUB_OUTPUT"
+          echo "make_latest=${LATEST}" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
