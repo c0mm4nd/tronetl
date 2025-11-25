@@ -56,6 +56,7 @@ func main() {
 	accountsOutput := cmdAddrDetails.String("accounts-output", "accounts.csv", "the CSV file for all account info outputs, use - to omit")
 	contractsOutput := cmdAddrDetails.String("contracts-output", "contract.csv", "the CSV file for contract account detail outputs, use - to omit")
 	tokensOutput := cmdAddrDetails.String("tokens-output", "tokens.csv", "the CSV file for token contract detail outputs, use - to omit")
+	addrWorkers := cmdAddrDetails.Uint("workers", 0, "the count of the workers in parallel")
 	cmdAddrDetails.AddFlagSet(nodeConfigs)
 
 	exportBlocksAndTransactionsCmd := &cobra.Command{
@@ -176,7 +177,11 @@ func main() {
 				chk(err)
 			}
 
-			ExportAddressDetails(options)
+			if *addrWorkers == 0 {
+				ExportAddressDetails(options)
+			} else {
+				ExportAddressDetailsWithWorkers(options, *addrWorkers)
+			}
 		},
 	}
 	exportAddressDetailsCmd.Flags().AddFlagSet(cmdAddrDetails)

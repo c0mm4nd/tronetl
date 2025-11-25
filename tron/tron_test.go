@@ -4,11 +4,17 @@ import (
 	"encoding/hex"
 	"fmt"
 	"math/big"
+	"os"
 	"testing"
 )
 
 func TestCall(t *testing.T) {
-	cli := NewTronClient("http://localhost")
+	provider := os.Getenv("TRON_PROVIDER")
+	if provider == "" {
+		t.Skip("TRON_PROVIDER not set; skipping integration test")
+	}
+
+	cli := NewTronClient(provider)
 	fmt.Println(cli.CallContract(
 		EnsureHexAddr("TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"),
 		EnsureHexAddr("THPvaUhoh2Qn2y9THCZML3H815hhFhn5YC"),
