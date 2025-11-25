@@ -76,19 +76,31 @@ jobs:
             PRE=false
             LATEST=true
           else
-            TAG="${GITHUB_SHA::7}"
+            TAG="push-${GITHUB_SHA::7}"
             NAME="Push build ${GITHUB_REF_NAME} (${GITHUB_SHA::7})"
-            PRE=false
+            PRE=true
             LATEST=false
           fi
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
           echo "name=${NAME}" >> "$GITHUB_OUTPUT"
           echo "prerelease=${PRE}" >> "$GITHUB_OUTPUT"
           echo "make_latest=${LATEST}" >> "$GITHUB_OUTPUT"
+      - name: Create tag (non-tag push)
+        if: github.ref_type != 'tag'
+        env:
+          TAG: ${{ steps.meta.outputs.tag }}
+          PAT: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          if [ -z "$PAT" ]; then echo 'Missing RELEASE_TOKEN secret with repo scope' && exit 1; fi
+          git config user.name 'release-bot'
+          git config user.email 'release-bot@users.noreply.github.com'
+          git tag "$TAG" || true
+          git push https://$PAT@github.com/${{ github.repository }} "$TAG"
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
+          token: ${{ secrets.RELEASE_TOKEN }}
           tag_name: ${{ steps.meta.outputs.tag }}
           name: ${{ steps.meta.outputs.name }}
           prerelease: ${{ steps.meta.outputs.prerelease }}
