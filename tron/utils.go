@@ -10,6 +10,10 @@ import (
 
 // EnsureTAddr converts a (unknwon) Hex to TAddr
 func EnsureTAddr(hexStr string) string {
+	if hexStr == "" {
+		panic("addr is empty string")
+	}
+
 	if hexStr[0] == 'T' {
 		log.Printf("Taddr %s input as a hex?", hexStr)
 		return hexStr
