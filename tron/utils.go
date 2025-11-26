@@ -3,7 +3,6 @@ package tron
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"log"
 
 	"github.com/btcsuite/btcd/btcutil/base58"
 )
@@ -15,7 +14,6 @@ func EnsureTAddr(hexStr string) string {
 	}
 
 	if hexStr[0] == 'T' {
-		log.Printf("Taddr %s input as a hex?", hexStr)
 		return hexStr
 	}
 
@@ -50,7 +48,6 @@ func EnsureTAddr(hexStr string) string {
 // EnsureHexAddr converts a T-string to Hex addr
 func EnsureHexAddr(theTstr string) string {
 	if theTstr[0] != 'T' {
-		log.Println(theTstr + " is not a TAddr")
 		return theTstr
 	}
 
