@@ -49,6 +49,13 @@ func ExportAddressDetails(options *ExportAddressDetailsOptions) {
 	cli := tron.NewTronClient(options.ProviderURI)
 	for _, addr := range allAddrs {
 		acc := cli.GetAccount(addr)
+		if acc == nil {
+			log.Printf("nil account for %s; skipping", addr)
+			continue
+		}
+		if acc.Address == "" {
+			acc.Address = addr // fallback to requested addr when API returns empty
+		}
 
 		if options.accountsOutput != nil {
 			accountsCsvEncoder.Encode(NewCsvAccount(acc))
@@ -102,6 +109,13 @@ func ExportAddressDetailsWithWorkers(options *ExportAddressDetailsOptions, worke
 		for idx := workerID; idx < uint(len(allAddrs)); idx += workers {
 			addr := allAddrs[idx]
 			acc := cli.GetAccount(addr)
+			if acc == nil {
+				log.Printf("nil account for %s; skipping", addr)
+				continue
+			}
+			if acc.Address == "" {
+				acc.Address = addr
+			}
 
 			if accountsEncCh != nil {
 				accountsEncCh <- NewCsvAccount(acc)
