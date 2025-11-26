@@ -54,7 +54,7 @@ func ExportAddressDetails(options *ExportAddressDetailsOptions) {
 			continue
 		}
 		if acc.Address == "" {
-			acc.Address = addr // fallback to requested addr when API returns empty
+			acc.Address = tron.EnsureTAddr(addr) // ensure downstream uses T-addr
 		}
 
 		if options.accountsOutput != nil {
@@ -114,7 +114,7 @@ func ExportAddressDetailsWithWorkers(options *ExportAddressDetailsOptions, worke
 				continue
 			}
 			if acc.Address == "" {
-				acc.Address = addr
+				acc.Address = tron.EnsureTAddr(addr)
 			}
 
 			if accountsEncCh != nil {

@@ -248,6 +248,10 @@ type CsvReceipt struct {
 }
 
 func NewCsvReceipt(blockNum uint64, txHash string, txIndex uint, contractAddr string, r *tron.HTTPReceipt) *CsvReceipt {
+	// contractAddr could be empty (normal transfers) or hex; keep output as T-addr when present
+	if contractAddr != "" {
+		contractAddr = tron.EnsureTAddr(contractAddr)
+	}
 
 	return &CsvReceipt{
 		TxHash:  txHash,
@@ -431,7 +435,7 @@ func NewCsvTokens(cli *tron.TronClient, contract *tron.HTTPContract) *CsvTokens 
 	block := cli.GetJSONBlockByNumberWithTxIDs(nil)
 
 	return &CsvTokens{
-		Address:     contractAddr,
+		Address:     tron.EnsureTAddr(contractAddr),
 		Symbol:      *symbol,
 		Name:        *name,
 		Decimals:    *decimals,
