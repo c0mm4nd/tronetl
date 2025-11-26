@@ -19,14 +19,14 @@ minor := $(word 2,$(subst ., ,$(base_version)))
 patch := $(word 3,$(subst ., ,$(base_version)))
 
 ifeq ($(TYPE),major)
-  major := $(shell echo $$((major + 1)))
+  major := $(shell echo $$(( $(major) + 1 )))
   minor := 0
   patch := 0
 else ifeq ($(TYPE),minor)
-  minor := $(shell echo $$((minor + 1)))
+  minor := $(shell echo $$(( $(minor) + 1 )))
   patch := 0
 else
-  patch := $(shell echo $$((patch + 1)))
+  patch := $(shell echo $$(( $(patch) + 1 )))
 endif
 
 new_version := $(major).$(minor).$(patch)
