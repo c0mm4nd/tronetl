@@ -26,6 +26,7 @@ type CsvTransaction struct {
 	Gas                  string `csv:"gas"`
 	GasPrice             string `csv:"gas_price"`
 	Input                string `csv:"input"`
+	Data                 string `csv:"data"` // raw_data.data (memo)
 	BlockTimestamp       uint64 `csv:"block_timestamp"`
 	MaxFeePerGas         string `csv:"max_fee_per_gas"`
 	MaxPriorityFeePerGas string `csv:"max_priority_fee_per_gas"`
@@ -68,6 +69,7 @@ func NewCsvTransaction(blockTimestamp uint64, txIndex int, jsontx *tron.JSONTran
 		Gas:                  jsontx.Gas.ToInt().String(),
 		GasPrice:             jsontx.GasPrice.ToInt().String(), // https://support.ledger.com/hc/en-us/articles/6331588714141-How-do-Tron-TRX-fees-work-?support=true
 		Input:                jsontx.Input[2:],
+		Data:                 httptx.RawData.Data,
 		BlockTimestamp:       blockTimestamp / 1000, // unit: sec
 		MaxFeePerGas:         "",                    //tx.MaxFeePerGas.String(),
 		MaxPriorityFeePerGas: "",                    //tx.MaxPriorityFeePerGas.String(),
