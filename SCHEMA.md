@@ -54,6 +54,7 @@ The TRX transaction data structure is as follows, here it mainly follows the tra
 | gas                      | bigint, = Energy Consumed        |
 | gas_price                | bigint, meaningless              |
 | input                    | hex_string                       |
+| data                     | string, `raw_data.data` (memo)   |
 | block_timestamp          | timestamp in second              |
 | max_fee_per_gas          | always empty                     |
 | max_priority_fee_per_gas | always empty                     |

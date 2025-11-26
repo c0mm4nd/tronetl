@@ -54,6 +54,7 @@ TRX 交易数据结构如下，这里主要遵循 java-tron 中 rpc 接口块附
 | gas | bigint, = 消耗的能量 |
 | gas_price | bigint, 无意义 |
 | input | hex_string |
+| data | string，`raw_data.data`（交易备注/附加数据，原样输出） |
 | block_timestamp | 时间戳（秒） |
 | max_fee_per_gas | 始终为空 |
 | max_priority_fee_per_gas | 始终为空 |
