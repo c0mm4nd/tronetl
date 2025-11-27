@@ -90,8 +90,17 @@ TRC10 交易数据结构（来自 `TransferAssetContract` 和 `TransferContract`
 | to_address | address |
 | value | bigint |
 
+增加：
 
----
+| 列名 | 类型 |
+| --- | --- |
+| status | 字符串，可以是 SUCCESS 或 REVERT |
+| transaction_timestamp | int64, 单位为秒 |
+| transaction_expiration | int64, 单位为秒 |
+| fee_limit | bigint |
+| gas | bigint, = 消耗的能量 |
+| gas_price | bigint, 无意义 |
+| data | string，`raw_data.data`（交易备注/附加数据，原样输出） |
 
 
 ## token_transfers.csv

@@ -94,11 +94,11 @@ func TestExportTokenTransfers_FunctionalValues(t *testing.T) {
 
 	tfBuf, logBuf, intBuf, recBuf := &bytes.Buffer{}, &bytes.Buffer{}, &bytes.Buffer{}, &bytes.Buffer{}
 	opts := &ExportTransferOptions{
-		ProviderURI:     provider,
-		StartBlock:      block76311000,
-		EndBlock:        block76311000,
-		tfOutput:        tfBuf,
-		logOutput:       logBuf,
+		ProviderURI:      provider,
+		StartBlock:       block76311000,
+		EndBlock:         block76311000,
+		tfOutput:         tfBuf,
+		logOutput:        logBuf,
 		internalTxOutput: intBuf,
 		receiptOutput:    recBuf,
 	}

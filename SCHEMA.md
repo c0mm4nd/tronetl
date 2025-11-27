@@ -90,8 +90,17 @@ The TRC10 transaction data structure (from `TransferAssetContract` and `Transfer
 | to_address          | address    |
 | value               | bigint     |
 
+Increase:
 
----
+| Column                 | Type                             |
+| ---------------------- | -------------------------------- |
+| status                 | string, can be SUCCESS or REVERT |
+| transaction_timestamp  | int64, unit is second            |
+| transaction_expiration | int64, unit is second            |
+| fee_limit              | bigint                           |
+| gas                    | bigint, = Energy Consumed        |
+| gas_price              | bigint, meaningless              |
+| data                   | string, `raw_data.data` (memo)   |
 
 
 ## token_transfers.csv

@@ -83,11 +83,11 @@ func TestExportTokenTransfersOutputsTAddr(t *testing.T) {
 
 	tfBuf, logBuf, internalBuf, receiptBuf := &bytes.Buffer{}, &bytes.Buffer{}, &bytes.Buffer{}, &bytes.Buffer{}
 	opts := &ExportTransferOptions{
-		ProviderURI: provider,
-		StartBlock:  76311000,
-		EndBlock:    76311000,
-		tfOutput:    tfBuf,
-		logOutput:   logBuf,
+		ProviderURI:      provider,
+		StartBlock:       76311000,
+		EndBlock:         76311000,
+		tfOutput:         tfBuf,
+		logOutput:        logBuf,
 		internalTxOutput: internalBuf,
 		receiptOutput:    receiptBuf,
 	}

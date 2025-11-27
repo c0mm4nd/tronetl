@@ -155,10 +155,32 @@ type CsvTRC10Transfer struct {
 	FromAddress string `csv:"from_address"`
 	ToAddress   string `csv:"to_address"`
 	Value       string `csv:"value"`
+
+	// TRX-like metadata
+	Status                string `csv:"status"`
+	TransactionTimestamp  int64  `csv:"transaction_timestamp"`
+	TransactionExpiration int64  `csv:"transaction_expiration"`
+	FeeLimit              int64  `csv:"fee_limit"`
+
+	// Gas fields (from JSON transaction)
+	Gas      string `csv:"gas"`
+	GasPrice string `csv:"gas_price"`
+
+	// Data (memo from raw_data.data)
+	Data string `csv:"data"`
 }
 
 // NewCsvTRC10Transfer creates a new CsvTRC10Transfer
-func NewCsvTRC10Transfer(blockHash string, blockNum uint64, txIndex, callIndex int, httpTx *tron.HTTPTransaction, tfParams *tron.TRC10TransferParams) *CsvTRC10Transfer {
+func NewCsvTRC10Transfer(blockHash string, blockNum uint64, txIndex, callIndex int, jsontx *tron.JSONTransaction, httpTx *tron.HTTPTransaction, tfParams *tron.TRC10TransferParams) *CsvTRC10Transfer {
+
+	status := ""
+	if len(httpTx.Ret) > 0 {
+		status = httpTx.Ret[0].ContractRet
+	}
+
+	txnTs := httpTx.RawData.Timestamp / 1000
+	txnExp := httpTx.RawData.Expiration / 1000
+	feeLimit := httpTx.RawData.FeeLimit
 
 	return &CsvTRC10Transfer{
 		TransactionHash:   httpTx.TxID,
@@ -171,6 +193,19 @@ func NewCsvTRC10Transfer(blockHash string, blockNum uint64, txIndex, callIndex i
 		FromAddress: tron.EnsureTAddr(tfParams.OwnerAddress),
 		ToAddress:   tron.EnsureTAddr(tfParams.ToAddress),
 		Value:       tfParams.Amount.String(),
+
+		// TRX-like metadata
+		Status:                status,
+		TransactionTimestamp:  txnTs,
+		TransactionExpiration: txnExp,
+		FeeLimit:              feeLimit,
+
+		// Gas fields
+		Gas:      jsontx.Gas.ToInt().String(),
+		GasPrice: jsontx.GasPrice.ToInt().String(),
+
+		// Data
+		Data: httpTx.RawData.Data,
 	}
 }
 

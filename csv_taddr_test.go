@@ -54,6 +54,23 @@ func TestNewCsvTransaction_UsesTAddr(t *testing.T) {
 }
 
 func TestNewCsvTRC10Transfer_UsesTAddr(t *testing.T) {
+	bn := hexutil.Uint64(1)
+	val := hexutil.Big(*big.NewInt(1))
+	gas := hexutil.Big(*big.NewInt(1))
+	gasPrice := hexutil.Big(*big.NewInt(1))
+	js := &tron.JSONTransaction{
+		BlockHash:        "0xdead",
+		BlockNumber:      &bn,
+		From:             hexWith0x,
+		To:               hexWith0x,
+		Gas:              &gas,
+		GasPrice:         &gasPrice,
+		Hash:             "0xhash",
+		Input:            "0x",
+		TransactionIndex: &bn,
+		Type:             "0x0",
+		Value:            &val,
+	}
 	tf := &tron.TRC10TransferParams{
 		OwnerAddress: rawHex,
 		ToAddress:    rawHex,
@@ -61,7 +78,7 @@ func TestNewCsvTRC10Transfer_UsesTAddr(t *testing.T) {
 		AssetName:    "TRX",
 	}
 	httpTx := &tron.HTTPTransaction{TxID: "tx"}
-	c := NewCsvTRC10Transfer("blockhash", 1, 0, 0, httpTx, tf)
+	c := NewCsvTRC10Transfer("blockhash", 1, 0, 0, js, httpTx, tf)
 	if c.FromAddress != tAddr || c.ToAddress != tAddr {
 		t.Fatalf("TRC10 transfer addresses should be T-addr, got %s %s", c.FromAddress, c.ToAddress)
 	}
