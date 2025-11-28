@@ -250,14 +250,23 @@ type CsvInternalTx struct {
 
 // NewCsvInternalTx creates a new CsvInternalTx
 func NewCsvInternalTx(blockNum uint64, txHash string, index uint, itx *tron.HTTPInternalTransaction, callInfoIndex uint, tokenID string, value int64) *CsvInternalTx {
+	callerAddr := ""
+	if itx.CallerAddress != "" {
+		callerAddr = tron.EnsureTAddr(itx.CallerAddress)
+	}
+
+	transferToAddr := ""
+	if itx.TransferToAddress != "" {
+		transferToAddr = tron.EnsureTAddr(itx.TransferToAddress)
+	}
 
 	return &CsvInternalTx{
 		BlockNumber:             blockNum,
 		TransactionHash:         txHash,
 		Index:                   index,
 		InternalTransactionHash: itx.InternalTransactionHash,
-		CallerAddress:           tron.EnsureTAddr(itx.CallerAddress),
-		TransferToAddress:       tron.EnsureTAddr(itx.TransferToAddress),
+		CallerAddress:           callerAddr,
+		TransferToAddress:       transferToAddr,
 		// CallValueInfo:     strings.Join(callValues, ";"),
 		CallInfoIndex: callInfoIndex,
 		CallTokenID:   tokenID,

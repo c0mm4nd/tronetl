@@ -145,15 +145,10 @@ func ExportTransfers(options *ExportTransferOptions) {
 
 				if internalTxEncoder != nil {
 					for internalIndex, internalTx := range txInfo.InternalTransactions {
-						if internalTx.TransferToAddress == "" {
-							continue
-						}
-
 						for callInfoIndex, callInfo := range internalTx.CallValueInfo {
 							err := internalTxEncoder.Encode(NewCsvInternalTx(number, txHash, uint(internalIndex), internalTx, uint(callInfoIndex), callInfo.TokenID, callInfo.CallValue))
 							chk(err)
 						}
-
 					}
 				}
 
