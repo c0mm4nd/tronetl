@@ -67,7 +67,11 @@ func ExportAddressDetails(options *ExportAddressDetailsOptions) {
 			contractsEncoder.Encode(csvContract)
 
 			if options.tokensOutput != nil && (csvContract.IsErc20 || csvContract.IsErc721) {
-				tokensEncoder.Encode(NewCsvTokens(cli, contract))
+				if tokens := NewCsvTokens(cli, contract); tokens != nil {
+					tokensEncoder.Encode(tokens)
+				} else {
+					log.Printf("skip writing tokens for %s: unable to parse token metadata", addr)
+				}
 			}
 		}
 
@@ -127,7 +131,11 @@ func ExportAddressDetailsWithWorkers(options *ExportAddressDetailsOptions, worke
 				contractsEncCh <- csvContract
 
 				if tokensEncCh != nil && (csvContract.IsErc20 || csvContract.IsErc721) {
-					tokensEncCh <- NewCsvTokens(cli, contract)
+					if tokens := NewCsvTokens(cli, contract); tokens != nil {
+						tokensEncCh <- tokens
+					} else {
+						log.Printf("skip writing tokens for %s: unable to parse token metadata", addr)
+					}
 				}
 			}
 		}

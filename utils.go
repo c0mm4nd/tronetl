@@ -95,6 +95,10 @@ func createCSVEncodeCh(wg *sync.WaitGroup, enc *csvutil.Encoder, maxWorker uint)
 				wg.Done()
 				return
 			}
+			if obj == nil {
+				log.Printf("skip nil object in CSV encoder channel")
+				continue
+			}
 			err := enc.Encode(obj)
 			chk(err)
 		}
