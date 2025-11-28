@@ -85,7 +85,7 @@ func locateEndBlock(cli *tron.TronClient, endTimestamp uint64) uint64 {
 	return estimateEndNumber
 }
 
-func createCSVEncodeCh(wg *sync.WaitGroup, enc *csvutil.Encoder, maxWorker uint) chan any {
+func createCSVEncodeCh(wg *sync.WaitGroup, enc *csvutil.Encoder, flusher interface{ Flush() }, maxWorker uint) chan any {
 	wg.Add(1)
 	ch := make(chan any, maxWorker)
 	writeFn := func() {
@@ -101,6 +101,10 @@ func createCSVEncodeCh(wg *sync.WaitGroup, enc *csvutil.Encoder, maxWorker uint)
 			}
 			err := enc.Encode(obj)
 			chk(err)
+			// Flush immediately so outputs are visible even if the process stops early.
+			if flusher != nil {
+				flusher.Flush()
+			}
 		}
 	}
 

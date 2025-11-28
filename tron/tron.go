@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"math/rand"
 	"net/http"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/holiman/uint256"
@@ -16,6 +17,11 @@ import (
 type TronClient struct {
 	httpURI string
 	jsonURI string
+}
+
+// Shared HTTP client; keep timeout tight to avoid hanging when nodes are unresponsive.
+var httpClient = &http.Client{
+	Timeout: 15 * time.Second,
 }
 
 func chk(err error) {
@@ -41,8 +47,9 @@ func (c *TronClient) GetJSONBlockByNumberWithTxs(number *big.Int) *JSONBlockWith
 		"id": rand.Int(),
 	})
 	chk(err)
-	resp, err := http.Post(c.jsonURI, "application/json", bytes.NewBuffer(payload))
+	resp, err := httpClient.Post(c.jsonURI, "application/json", bytes.NewBuffer(payload))
 	chk(err)
+	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	chk(err)
 
@@ -66,8 +73,9 @@ func (c *TronClient) GetJSONBlockByNumberWithTxIDs(number *big.Int) *JSONBlockWi
 		"id": rand.Int(),
 	})
 	chk(err)
-	resp, err := http.Post(c.jsonURI, "application/json", bytes.NewBuffer(payload))
+	resp, err := httpClient.Post(c.jsonURI, "application/json", bytes.NewBuffer(payload))
 	chk(err)
+	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	chk(err)
 
@@ -85,11 +93,12 @@ func (c *TronClient) GetHTTPBlockByNumber(number *big.Int) *HTTPBlock {
 	url := c.httpURI + "/wallet/getblockbynum" // + "?visible=true"
 	payload, err := json.Marshal(map[string]any{
 		"num": number.Uint64(),
-		// "visable": true,
+		// "visible": true,
 	})
 	chk(err)
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(payload))
+	resp, err := httpClient.Post(url, "application/json", bytes.NewBuffer(payload))
 	chk(err)
+	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	chk(err)
 
@@ -108,11 +117,12 @@ func (c *TronClient) GetTxInfosByNumber(number uint64) []HTTPTxInfo {
 	url := c.httpURI + "/wallet/gettransactioninfobyblocknum" // + "?visible=true"
 	payload, err := json.Marshal(map[string]any{
 		"num": number,
-		// "visable": true,
+		// "visible": true,
 	})
 	chk(err)
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(payload))
+	resp, err := httpClient.Post(url, "application/json", bytes.NewBuffer(payload))
 	chk(err)
+	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	chk(err)
 
@@ -127,11 +137,12 @@ func (c *TronClient) GetAccount(address string) *HTTPAccount {
 	url := c.httpURI + "/wallet/getaccount" // + "?visible=true"
 	payload, err := json.Marshal(map[string]any{
 		"address": address,
-		// "visable": true,
+		"visible": true,
 	})
 	chk(err)
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(payload))
+	resp, err := httpClient.Post(url, "application/json", bytes.NewBuffer(payload))
 	chk(err)
+	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	chk(err)
 
@@ -145,12 +156,13 @@ func (c *TronClient) GetAccount(address string) *HTTPAccount {
 func (c *TronClient) GetContract(address string) *HTTPContract {
 	url := c.httpURI + "/wallet/getcontract" // + "?visible=true"
 	payload, err := json.Marshal(map[string]any{
-		"value": address,
-		// "visable": true,
+		"value":   address,
+		"visible": true,
 	})
 	chk(err)
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(payload))
+	resp, err := httpClient.Post(url, "application/json", bytes.NewBuffer(payload))
 	chk(err)
+	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	chk(err)
 
@@ -202,11 +214,12 @@ func (c *TronClient) CallContract(contractAddr, callerAddr string, val, feeLimit
 		"fee_limit":         feeLimit,
 		"call_value":        val,
 		"owner_address":     callerAddr, // = caller
-		// "visable": true,
+		"visible":           true,
 	})
 	chk(err)
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(payload))
+	resp, err := httpClient.Post(url, "application/json", bytes.NewBuffer(payload))
 	chk(err)
+	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	chk(err)
 

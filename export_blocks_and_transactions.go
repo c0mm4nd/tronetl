@@ -106,21 +106,21 @@ func ExportBlocksAndTransactionsWithWorkers(options *ExportBlocksAndTransactions
 		blksCsvWriter := csv.NewWriter(options.blksOutput)
 		defer blksCsvWriter.Flush()
 		blksCsvEncoder := csvutil.NewEncoder(blksCsvWriter)
-		blksCsvEncCh = createCSVEncodeCh(&receiverWG, blksCsvEncoder, workers)
+		blksCsvEncCh = createCSVEncodeCh(&receiverWG, blksCsvEncoder, blksCsvWriter, workers)
 	}
 
 	if options.txsOutput != nil {
 		txsCsvWriter := csv.NewWriter(options.txsOutput)
 		defer txsCsvWriter.Flush()
 		txsCsvEncoder := csvutil.NewEncoder(txsCsvWriter)
-		txsCsvEncCh = createCSVEncodeCh(&receiverWG, txsCsvEncoder, workers)
+		txsCsvEncCh = createCSVEncodeCh(&receiverWG, txsCsvEncoder, txsCsvWriter, workers)
 	}
 
 	if options.trc10Output != nil {
 		trc10CsvWriter := csv.NewWriter(options.trc10Output)
 		defer trc10CsvWriter.Flush()
 		trc10CsvEncoder := csvutil.NewEncoder(trc10CsvWriter)
-		trc10CsvEncCh = createCSVEncodeCh(&receiverWG, trc10CsvEncoder, workers)
+		trc10CsvEncCh = createCSVEncodeCh(&receiverWG, trc10CsvEncoder, trc10CsvWriter, workers)
 	}
 
 	log.Printf("try parsing blocks and transactions from block %d to %d", options.StartBlock, options.EndBlock)

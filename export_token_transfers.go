@@ -173,28 +173,28 @@ func ExportTransfersWithWorkers(options *ExportTransferOptions, workers uint) {
 		tfWriter := csv.NewWriter(options.tfOutput)
 		defer tfWriter.Flush()
 		tfEncoder := csvutil.NewEncoder(tfWriter)
-		tfEncCh = createCSVEncodeCh(&receiverWG, tfEncoder, workers)
+		tfEncCh = createCSVEncodeCh(&receiverWG, tfEncoder, tfWriter, workers)
 	}
 
 	if options.logOutput != nil {
 		logWriter := csv.NewWriter(options.logOutput)
 		defer logWriter.Flush()
 		logEncoder := csvutil.NewEncoder(logWriter)
-		logEncCh = createCSVEncodeCh(&receiverWG, logEncoder, workers)
+		logEncCh = createCSVEncodeCh(&receiverWG, logEncoder, logWriter, workers)
 	}
 
 	if options.internalTxOutput != nil {
 		internalTxWriter := csv.NewWriter(options.internalTxOutput)
 		defer internalTxWriter.Flush()
 		internalTxEncoder := csvutil.NewEncoder(internalTxWriter)
-		internalTxEncCh = createCSVEncodeCh(&receiverWG, internalTxEncoder, workers)
+		internalTxEncCh = createCSVEncodeCh(&receiverWG, internalTxEncoder, internalTxWriter, workers)
 	}
 
 	if options.receiptOutput != nil {
 		receiptWriter := csv.NewWriter(options.receiptOutput)
 		defer receiptWriter.Flush()
 		receiptEncoder := csvutil.NewEncoder(receiptWriter)
-		receiptEncCh = createCSVEncodeCh(&receiverWG, receiptEncoder, workers)
+		receiptEncCh = createCSVEncodeCh(&receiverWG, receiptEncoder, receiptWriter, workers)
 	}
 
 	filterLogContracts := make([]string, len(options.Contracts))
