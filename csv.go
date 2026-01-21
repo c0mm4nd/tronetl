@@ -578,13 +578,15 @@ type CsvNewContract struct {
 	BlockNumber     uint64 `csv:"block_number"`
 	TransactionHash string `csv:"transaction_hash"`
 	ContractAddress string `csv:"contract_address"`
+	Method          string `csv:"method"` // "transaction" or "internal_transaction"
 }
 
 // NewCsvNewContract creates a new CsvNewContract
-func NewCsvNewContract(blockNum uint64, txHash string, contractAddr string) *CsvNewContract {
+func NewCsvNewContract(blockNum uint64, txHash string, contractAddr string, method string) *CsvNewContract {
 	return &CsvNewContract{
 		BlockNumber:     blockNum,
 		TransactionHash: txHash,
 		ContractAddress: tron.EnsureTAddr(contractAddr),
+		Method:          method,
 	}
 }
