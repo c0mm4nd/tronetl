@@ -572,3 +572,21 @@ func ParseTotalSupply(contractResults []string) *uint64 {
 	rtn := result.Uint64()
 	return &rtn
 }
+
+// CsvNewContract represents a newly created contract in the block range
+type CsvNewContract struct {
+	BlockNumber     uint64 `csv:"block_number"`
+	TransactionHash string `csv:"transaction_hash"`
+	ContractAddress string `csv:"contract_address"`
+	Source          string `csv:"source"` // "CreateSmartContract" or "InternalTransaction"
+}
+
+// NewCsvNewContract creates a new CsvNewContract
+func NewCsvNewContract(blockNum uint64, txHash string, contractAddr string, source string) *CsvNewContract {
+	return &CsvNewContract{
+		BlockNumber:     blockNum,
+		TransactionHash: txHash,
+		ContractAddress: tron.EnsureTAddr(contractAddr),
+		Source:          source,
+	}
+}
