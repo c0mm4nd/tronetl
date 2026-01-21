@@ -144,7 +144,7 @@ func ExportTransfers(options *ExportTransferOptions) {
 						httptx := httpblock.Transactions[txIndex]
 						for _, contractCall := range httptx.RawData.Contract {
 							if contractCall.ContractType == "CreateSmartContract" && txInfo.ContractAddress != "" {
-								err := newContractsEncoder.Encode(NewCsvNewContract(number, txHash, txInfo.ContractAddress, "CreateSmartContract"))
+								err := newContractsEncoder.Encode(NewCsvNewContract(number, txHash, txInfo.ContractAddress))
 								chk(err)
 							}
 						}
@@ -153,7 +153,7 @@ func ExportTransfers(options *ExportTransferOptions) {
 					// Check internal transactions for note="637265617465" (create)
 					for _, internalTx := range txInfo.InternalTransactions {
 						if internalTx.Note == "637265617465" && internalTx.TransferToAddress != "" {
-							err := newContractsEncoder.Encode(NewCsvNewContract(number, txHash, internalTx.TransferToAddress, "InternalTransaction"))
+							err := newContractsEncoder.Encode(NewCsvNewContract(number, txHash, internalTx.TransferToAddress))
 							chk(err)
 						}
 					}
@@ -315,7 +315,7 @@ func ExportTransfersWithWorkers(options *ExportTransferOptions, workers uint) {
 						httptx := httpblock.Transactions[txIndex]
 						for _, contractCall := range httptx.RawData.Contract {
 							if contractCall.ContractType == "CreateSmartContract" && txInfo.ContractAddress != "" {
-								newContractsEncCh <- NewCsvNewContract(number, txHash, txInfo.ContractAddress, "CreateSmartContract")
+								newContractsEncCh <- NewCsvNewContract(number, txHash, txInfo.ContractAddress)
 							}
 						}
 					}
@@ -323,7 +323,7 @@ func ExportTransfersWithWorkers(options *ExportTransferOptions, workers uint) {
 					// Check internal transactions for note="637265617465" (create)
 					for _, internalTx := range txInfo.InternalTransactions {
 						if internalTx.Note == "637265617465" && internalTx.TransferToAddress != "" {
-							newContractsEncCh <- NewCsvNewContract(number, txHash, internalTx.TransferToAddress, "InternalTransaction")
+							newContractsEncCh <- NewCsvNewContract(number, txHash, internalTx.TransferToAddress)
 						}
 					}
 				}
