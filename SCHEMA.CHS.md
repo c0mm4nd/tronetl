@@ -174,6 +174,23 @@ txinfo 的内部交易数据结构如下：
 
 ---
 
+## new_contracts.csv
+
+新创建的合约数据结构如下：
+
+| 列名 | 类型 |
+| --- | --- |
+| block_number | uint64 |
+| transaction_hash | hex_string |
+| contract_address | address |
+| method | 字符串，"transaction" 或 "internal_transaction" |
+
+**识别方法：**
+- `transaction`: 通过 `CreateSmartContract` 交易类型创建的合约
+- `internal_transaction`: 通过内部交易创建的合约，其 note 值为 `637265617465`（十六进制："create"）
+
+---
+
 ## accounts.csv
 
 账户数据结构如下：

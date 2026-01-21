@@ -174,6 +174,23 @@ The tx receipt data structure is as follows:
 
 ---
 
+## new_contracts.csv
+
+The newly created contracts data structure is as follows:
+
+| Column           | Type                                         |
+| ---------------- | -------------------------------------------- |
+| block_number     | uint64                                       |
+| transaction_hash | hex_string                                   |
+| contract_address | address                                      |
+| method           | string, "transaction" or "internal_transaction" |
+
+**Detection Methods:**
+- `transaction`: Contract created via `CreateSmartContract` transaction type
+- `internal_transaction`: Contract created via internal transaction with note `637265617465` (hex: "create")
+
+---
+
 ## accounts.csv
 
 The account data structure is as follows:
