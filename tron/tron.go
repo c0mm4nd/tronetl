@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"math/rand"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -31,9 +32,31 @@ func chk(err error) {
 }
 
 func NewTronClient(providerURL string) *TronClient {
+	httpURI := providerURL
+	jsonURI := providerURL
+	
+	// Handle empty or invalid URLs
+	if providerURL == "" {
+		// Default to localhost with ports
+		httpURI = "http://localhost:8090"
+		jsonURI = "http://localhost:50545/jsonrpc"
+	} else if strings.HasPrefix(providerURL, "https://") || strings.HasPrefix(providerURL, "http://") {
+		// Already has protocol, use as-is
+		httpURI = providerURL
+		jsonURI = providerURL + "/jsonrpc"
+	} else if strings.Contains(providerURL, ":") {
+		// Already has port, use as-is
+		httpURI = providerURL
+		jsonURI = providerURL + "/jsonrpc"
+	} else {
+		// Legacy behavior: add default ports
+		httpURI = providerURL + ":8090"
+		jsonURI = providerURL + ":50545/jsonrpc"
+	}
+	
 	return &TronClient{
-		httpURI: providerURL + ":8090",
-		jsonURI: providerURL + ":50545/jsonrpc",
+		httpURI: httpURI,
+		jsonURI: jsonURI,
 	}
 }
 
@@ -126,11 +149,38 @@ func (c *TronClient) GetTxInfosByNumber(number uint64) []HTTPTxInfo {
 	body, err := io.ReadAll(resp.Body)
 	chk(err)
 
+	// Handle empty object response for blocks with no transactions
+	trimmed := strings.TrimSpace(string(body))
+	if trimmed == "{}" {
+		return []HTTPTxInfo{}
+	}
+
+	// Try to unmarshal as array first
 	var txInfos []HTTPTxInfo
 	err = json.Unmarshal(body, &txInfos)
-	chk(err)
+	if err != nil {
+		// If it fails, it might be an error response object
+		// Try to unmarshal as a single object (error case)
+		var singleInfo HTTPTxInfo
+		err2 := json.Unmarshal(body, &singleInfo)
+		if err2 == nil {
+			// Successfully parsed as single object, but this shouldn't happen for valid data
+			// Return empty array for now
+			return []HTTPTxInfo{}
+		}
+		// Neither worked, panic with original error
+		panic(fmt.Sprintf("failed to unmarshal tx infos for block %d: %v, body preview: %s", 
+			number, err, string(body[:min(200, len(body))])))
+	}
 
 	return txInfos
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 func (c *TronClient) GetAccount(address string) *HTTPAccount {
