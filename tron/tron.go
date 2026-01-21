@@ -41,17 +41,20 @@ func NewTronClient(providerURL string) *TronClient {
 		httpURI = "http://localhost:8090"
 		jsonURI = "http://localhost:50545/jsonrpc"
 	} else if strings.HasPrefix(providerURL, "https://") || strings.HasPrefix(providerURL, "http://") {
-		// Already has protocol, use as-is
-		httpURI = providerURL
-		jsonURI = providerURL + "/jsonrpc"
-	} else if strings.Contains(providerURL, ":") {
-		// Already has port, use as-is
+		// Already has protocol, use as-is for HTTP API
 		httpURI = providerURL
 		jsonURI = providerURL + "/jsonrpc"
 	} else {
-		// Legacy behavior: add default ports
-		httpURI = providerURL + ":8090"
-		jsonURI = providerURL + ":50545/jsonrpc"
+		// No protocol - add default ports (legacy behavior)
+		// This handles both "localhost" and "localhost:8090" formats
+		if !strings.Contains(providerURL, ":") {
+			httpURI = providerURL + ":8090"
+			jsonURI = providerURL + ":50545/jsonrpc"
+		} else {
+			// Already has port specified without protocol
+			httpURI = providerURL
+			jsonURI = providerURL + "/jsonrpc"
+		}
 	}
 	
 	return &TronClient{
@@ -159,18 +162,27 @@ func (c *TronClient) GetTxInfosByNumber(number uint64) []HTTPTxInfo {
 	var txInfos []HTTPTxInfo
 	err = json.Unmarshal(body, &txInfos)
 	if err != nil {
-		// If it fails, it might be an error response object
-		// Try to unmarshal as a single object (error case)
+		// If it fails, check if body is empty
+		if len(body) == 0 {
+			return []HTTPTxInfo{}
+		}
+		
+		// It might be an error response or single object - try that
 		var singleInfo HTTPTxInfo
 		err2 := json.Unmarshal(body, &singleInfo)
 		if err2 == nil {
-			// Successfully parsed as single object, but this shouldn't happen for valid data
-			// Return empty array for now
+			// Successfully parsed as single object - this is unexpected for transaction info API
+			// Log and return empty for now to avoid breaking, but this indicates an API issue
+			fmt.Printf("Warning: unexpected single object response for block %d transaction info\n", number)
 			return []HTTPTxInfo{}
 		}
-		// Neither worked, panic with original error
+		// Neither worked, panic with detailed error
+		bodyPreview := string(body)
+		if len(body) > 200 {
+			bodyPreview = string(body[:200])
+		}
 		panic(fmt.Sprintf("failed to unmarshal tx infos for block %d: %v, body preview: %s", 
-			number, err, string(body[:min(200, len(body))])))
+			number, err, bodyPreview))
 	}
 
 	return txInfos
