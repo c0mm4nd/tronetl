@@ -181,7 +181,7 @@ func ExportAddressDetailsWithWorkers(options *ExportAddressDetailsOptions, worke
 
 func collectAllAddrs(options *ExportAddressDetailsOptions) []string {
 	// find all 34 length T-addr (or convert hex to T-addr)
-	allAddrs := make([]string, 0, len(options.Addresses))
+	addrSet := make(map[string]struct{})
 	if options.addrSource != nil {
 		scanner := bufio.NewScanner(options.addrSource)
 		for scanner.Scan() {
@@ -192,9 +192,9 @@ func collectAllAddrs(options *ExportAddressDetailsOptions) []string {
 				}
 				switch {
 				case sub[0] == 'T' && len(sub) == 34:
-					allAddrs = append(allAddrs, sub) // already T-addr
+					addrSet[sub] = struct{}{} // already T-addr
 				case len(sub) >= 40 && len(sub) <= 64:
-					allAddrs = append(allAddrs, tron.EnsureTAddr(sub)) // likely hex, convert
+					addrSet[tron.EnsureTAddr(sub)] = struct{}{} // likely hex, convert
 				default:
 					// skip header or malformed rows
 					continue
@@ -207,12 +207,17 @@ func collectAllAddrs(options *ExportAddressDetailsOptions) []string {
 		addr := options.Addresses[i]
 		switch {
 		case len(addr) > 0 && addr[0] == 'T' && len(addr) == 34:
-			allAddrs = append(allAddrs, addr)
+			addrSet[addr] = struct{}{}
 		case len(addr) >= 40 && len(addr) <= 64:
-			allAddrs = append(allAddrs, tron.EnsureTAddr(addr))
+			addrSet[tron.EnsureTAddr(addr)] = struct{}{}
 		default:
 			// skip invalid address
 		}
+	}
+
+	allAddrs := make([]string, 0, len(addrSet))
+	for addr := range addrSet {
+		allAddrs = append(allAddrs, addr)
 	}
 
 	return allAddrs

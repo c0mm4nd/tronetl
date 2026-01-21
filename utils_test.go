@@ -22,7 +22,7 @@ func TestCreateCSVEncodeCh(t *testing.T) {
 	enc := csvutil.NewEncoder(csvWriter)
 
 	var wg sync.WaitGroup
-	ch := createCSVEncodeCh(&wg, enc, 2)
+	ch := createCSVEncodeCh(&wg, enc, csvWriter, 2)
 
 	total := 5
 	for i := 0; i < total; i++ {
