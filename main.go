@@ -47,6 +47,7 @@ func main() {
 	logOutput := cmdTokenTf.String("logs-output", "logs.csv", "the CSV file for transaction log outputs, use - to omit")
 	internalTxOutput := cmdTokenTf.String("internal-tx-output", "internal_transactions.csv", "the CSV file for internal transaction outputs, use - to omit")
 	receiptOutput := cmdTokenTf.String("receipts-output", "receipts.csv", "the CSV file for transaction receipt outputs, use - to omit")
+	newContractsOutput := cmdTokenTf.String("new-contracts-output", "new_contracts.csv", "the CSV file for newly created contract outputs, use - to omit")
 	filterContracts := cmdTokenTf.StringArray("contracts", []string{}, "just output selected contracts' transfers")
 	cmdTokenTf.AddFlagSet(defaults)
 
@@ -133,6 +134,11 @@ func main() {
 
 			if *receiptOutput != "-" {
 				options.receiptOutput, err = os.Create(*receiptOutput)
+				chk(err)
+			}
+
+			if *newContractsOutput != "-" {
+				options.newContractsOutput, err = os.Create(*newContractsOutput)
 				chk(err)
 			}
 
@@ -238,17 +244,20 @@ func main() {
 				chk(err)
 				internalTxOut, err := zipWriter.Create("internal_transactions.csv")
 				chk(err)
+				newContractsOut, err := zipWriter.Create("new_contracts.csv")
+				chk(err)
 
 				options := &ExportTransferOptions{
-					tfOutput:         tfOut,
-					logOutput:        logOut,
-					internalTxOutput: internalTxOut,
-					ProviderURI:      *providerURI,
-					StartBlock:       tryStr2Uint(ctx.Query("start-block")),
-					EndBlock:         tryStr2Uint(ctx.Query("end-block")),
-					StartTimestamp:   tryStr2Uint(ctx.Query("start-timestamp")),
-					EndTimestamp:     tryStr2Uint(ctx.Query("end-timestamp")),
-					Contracts:        ctx.QueryArray("contracts"),
+					tfOutput:           tfOut,
+					logOutput:          logOut,
+					internalTxOutput:   internalTxOut,
+					newContractsOutput: newContractsOut,
+					ProviderURI:        *providerURI,
+					StartBlock:         tryStr2Uint(ctx.Query("start-block")),
+					EndBlock:           tryStr2Uint(ctx.Query("end-block")),
+					StartTimestamp:     tryStr2Uint(ctx.Query("start-timestamp")),
+					EndTimestamp:       tryStr2Uint(ctx.Query("end-timestamp")),
+					Contracts:          ctx.QueryArray("contracts"),
 				}
 				ExportTransfers(options)
 

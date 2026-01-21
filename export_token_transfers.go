@@ -14,10 +14,11 @@ import (
 
 type ExportTransferOptions struct {
 	// outputType string // failed to tfOutput to a conn with
-	tfOutput         io.Writer
-	logOutput        io.Writer
-	internalTxOutput io.Writer
-	receiptOutput    io.Writer
+	tfOutput            io.Writer
+	logOutput           io.Writer
+	internalTxOutput    io.Writer
+	receiptOutput       io.Writer
+	newContractsOutput  io.Writer
 
 	Worker int
 
@@ -36,7 +37,7 @@ type ExportTransferOptions struct {
 func ExportTransfers(options *ExportTransferOptions) {
 	cli := tron.NewTronClient(options.ProviderURI)
 
-	var tfEncoder, logEncoder, internalTxEncoder, receiptEncoder *csvutil.Encoder
+	var tfEncoder, logEncoder, internalTxEncoder, receiptEncoder, newContractsEncoder *csvutil.Encoder
 
 	if options.tfOutput != nil {
 		tfWriter := csv.NewWriter(options.tfOutput)
@@ -60,6 +61,12 @@ func ExportTransfers(options *ExportTransferOptions) {
 		receiptWriter := csv.NewWriter(options.receiptOutput)
 		defer receiptWriter.Flush()
 		receiptEncoder = csvutil.NewEncoder(receiptWriter)
+	}
+
+	if options.newContractsOutput != nil {
+		newContractsWriter := csv.NewWriter(options.newContractsOutput)
+		defer newContractsWriter.Flush()
+		newContractsEncoder = csvutil.NewEncoder(newContractsWriter)
 	}
 
 	filterLogContracts := make([]string, len(options.Contracts))
@@ -116,11 +123,40 @@ func ExportTransfers(options *ExportTransferOptions) {
 	if options.StartBlock != 0 && options.EndBlock != 0 {
 		for number := options.StartBlock; number <= options.EndBlock; number++ {
 			txInfos := cli.GetTxInfosByNumber(number)
+			
+			// Fetch HTTP block to get transaction contract types for new contracts detection
+			var httpblock *tron.HTTPBlock
+			if newContractsEncoder != nil {
+				httpblock = cli.GetHTTPBlockByNumber(new(big.Int).SetUint64(number))
+			}
+			
 			for txIndex, txInfo := range txInfos {
 				txHash := txInfo.ID
 
 				if receiptEncoder != nil {
 					receiptEncoder.Encode(NewCsvReceipt(number, txHash, uint(txIndex), txInfo.ContractAddress, txInfo.Receipt))
+				}
+
+				// Check for newly created contracts
+				if newContractsEncoder != nil {
+					// Check if transaction has CreateSmartContract type
+					if httpblock != nil && txIndex < len(httpblock.Transactions) {
+						httptx := httpblock.Transactions[txIndex]
+						for _, contractCall := range httptx.RawData.Contract {
+							if contractCall.ContractType == "CreateSmartContract" && txInfo.ContractAddress != "" {
+								err := newContractsEncoder.Encode(NewCsvNewContract(number, txHash, txInfo.ContractAddress, "transaction"))
+								chk(err)
+							}
+						}
+					}
+
+					// Check internal transactions for note="637265617465" (create)
+					for _, internalTx := range txInfo.InternalTransactions {
+						if internalTx.Note == "637265617465" && internalTx.TransferToAddress != "" {
+							err := newContractsEncoder.Encode(NewCsvNewContract(number, txHash, internalTx.TransferToAddress, "internal_transaction"))
+							chk(err)
+						}
+					}
 				}
 
 				for logIndex, log := range txInfo.Log {
@@ -166,7 +202,7 @@ func ExportTransfers(options *ExportTransferOptions) {
 func ExportTransfersWithWorkers(options *ExportTransferOptions, workers uint) {
 	cli := tron.NewTronClient(options.ProviderURI)
 
-	var tfEncCh, logEncCh, internalTxEncCh, receiptEncCh chan any
+	var tfEncCh, logEncCh, internalTxEncCh, receiptEncCh, newContractsEncCh chan any
 	var receiverWG sync.WaitGroup
 
 	if options.tfOutput != nil {
@@ -195,6 +231,13 @@ func ExportTransfersWithWorkers(options *ExportTransferOptions, workers uint) {
 		defer receiptWriter.Flush()
 		receiptEncoder := csvutil.NewEncoder(receiptWriter)
 		receiptEncCh = createCSVEncodeCh(&receiverWG, receiptEncoder, receiptWriter, workers)
+	}
+
+	if options.newContractsOutput != nil {
+		newContractsWriter := csv.NewWriter(options.newContractsOutput)
+		defer newContractsWriter.Flush()
+		newContractsEncoder := csvutil.NewEncoder(newContractsWriter)
+		newContractsEncCh = createCSVEncodeCh(&receiverWG, newContractsEncoder, newContractsWriter, workers)
 	}
 
 	filterLogContracts := make([]string, len(options.Contracts))
@@ -251,11 +294,38 @@ func ExportTransfersWithWorkers(options *ExportTransferOptions, workers uint) {
 	exportWork := func(wg *sync.WaitGroup, workerID uint) {
 		for number := options.StartBlock + uint64(workerID); number <= options.EndBlock; number += uint64(workers) {
 			txInfos := cli.GetTxInfosByNumber(number)
+			
+			// Fetch HTTP block to get transaction contract types for new contracts detection
+			var httpblock *tron.HTTPBlock
+			if options.newContractsOutput != nil {
+				httpblock = cli.GetHTTPBlockByNumber(new(big.Int).SetUint64(number))
+			}
+			
 			for txIndex, txInfo := range txInfos {
 				txHash := txInfo.ID
 
 				if options.receiptOutput != nil {
 					receiptEncCh <- NewCsvReceipt(number, txHash, uint(txIndex), txInfo.ContractAddress, txInfo.Receipt)
+				}
+
+				// Check for newly created contracts
+				if options.newContractsOutput != nil {
+					// Check if transaction has CreateSmartContract type
+					if httpblock != nil && txIndex < len(httpblock.Transactions) {
+						httptx := httpblock.Transactions[txIndex]
+						for _, contractCall := range httptx.RawData.Contract {
+							if contractCall.ContractType == "CreateSmartContract" && txInfo.ContractAddress != "" {
+								newContractsEncCh <- NewCsvNewContract(number, txHash, txInfo.ContractAddress, "transaction")
+							}
+						}
+					}
+
+					// Check internal transactions for note="637265617465" (create)
+					for _, internalTx := range txInfo.InternalTransactions {
+						if internalTx.Note == "637265617465" && internalTx.TransferToAddress != "" {
+							newContractsEncCh <- NewCsvNewContract(number, txHash, internalTx.TransferToAddress, "internal_transaction")
+						}
+					}
 				}
 
 				for logIndex, log := range txInfo.Log {
@@ -311,6 +381,9 @@ func ExportTransfersWithWorkers(options *ExportTransferOptions, workers uint) {
 	}
 	if options.receiptOutput != nil {
 		close(receiptEncCh)
+	}
+	if options.newContractsOutput != nil {
+		close(newContractsEncCh)
 	}
 
 	receiverWG.Wait()

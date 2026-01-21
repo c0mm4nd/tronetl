@@ -74,25 +74,26 @@ Flags:
 
 ### export_token_transfers
 
-Exports TRC20 token transfers, logs, internal transactions, and receipts to CSV files.
+Exports TRC20 token transfers, logs, internal transactions, receipts, and newly created contracts to CSV files.
 
 ```
 Usage:
   tronetl export_token_transfers [flags]
 
 Flags:
-      --contracts stringArray       just output selected contracts' transfers
-      --end-block uint              the ending block number
-      --end-timestamp uint          the ending block's timestamp (in UTC)
-  -h, --help                        help for export_token_transfers
-      --internal-tx-output string   the CSV file for internal transaction outputs, use - to omit (default "internal_transactions.csv")
-      --logs-output string          the CSV file for transaction log outputs, use - to omit (default "logs.csv")
-      --provider-uri string         the base uri of the tron fullnode (without port) (default "http://localhost")
-      --receipts-output string      the CSV file for transaction receipt outputs, use - to omit (default "receipts.csv")
-      --start-block uint            the starting block number
-      --start-timestamp uint        the starting block's timestamp (in UTC)
-      --transfers-output string     the CSV file for token transfer outputs, use - to omit (default "token_transfers.csv")
-      --workers uint                the count of the workers in parallel
+      --contracts stringArray         just output selected contracts' transfers
+      --end-block uint                the ending block number
+      --end-timestamp uint            the ending block's timestamp (in UTC)
+  -h, --help                          help for export_token_transfers
+      --internal-tx-output string     the CSV file for internal transaction outputs, use - to omit (default "internal_transactions.csv")
+      --logs-output string            the CSV file for transaction log outputs, use - to omit (default "logs.csv")
+      --new-contracts-output string   the CSV file for newly created contract outputs, use - to omit (default "new_contracts.csv")
+      --provider-uri string           the base uri of the tron fullnode (without port) (default "http://localhost")
+      --receipts-output string        the CSV file for transaction receipt outputs, use - to omit (default "receipts.csv")
+      --start-block uint              the starting block number
+      --start-timestamp uint          the starting block's timestamp (in UTC)
+      --transfers-output string       the CSV file for token transfer outputs, use - to omit (default "token_transfers.csv")
+      --workers uint                  the count of the workers in parallel
 ```
 
 ### export_address_details

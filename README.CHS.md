@@ -77,25 +77,26 @@ ETL 结果的模式（schema）请参考[此文档](./SCHEMA.CHS.md)。
 
 ### export_token_transfers
 
-导出 TRC20 代币转账、日志、内部交易和收据到 CSV 文件。
+导出 TRC20 代币转账、日志、内部交易、收据和新创建的合约到 CSV 文件。
 
 ```
 用法:
   tronetl export_token_transfers [flags]
 
 标志:
-      --contracts stringArray       仅输出指定合约的转账
-      --end-block uint              结束区块高度
-      --end-timestamp uint          结束区块的时间戳 (UTC)
-  -h, --help                        export_token_transfers 的帮助信息
-      --internal-tx-output string   内部交易输出的 CSV 文件路径，使用 - 表示不输出 (默认 "internal_transactions.csv")
-      --logs-output string          日志输出的 CSV 文件路径，使用 - 表示不输出 (默认 "logs.csv")
-      --provider-uri string         TRON Full Node 的 URI (不带端口) (默认 "http://localhost")
-      --receipts-output string      收据输出的 CSV 文件路径，使用 - 表示不输出 (默认 "receipts.csv")
-      --start-block uint            起始区块高度
-      --start-timestamp uint        起始区块的时间戳 (UTC)
-      --transfers-output string     代币转账输出的 CSV 文件路径，使用 - 表示不输出 (默认 "token_transfers.csv")
-      --workers uint                并行执行的 worker 数量
+      --contracts stringArray         仅输出指定合约的转账
+      --end-block uint                结束区块高度
+      --end-timestamp uint            结束区块的时间戳 (UTC)
+  -h, --help                          export_token_transfers 的帮助信息
+      --internal-tx-output string     内部交易输出的 CSV 文件路径，使用 - 表示不输出 (默认 "internal_transactions.csv")
+      --logs-output string            日志输出的 CSV 文件路径，使用 - 表示不输出 (默认 "logs.csv")
+      --new-contracts-output string   新创建合约输出的 CSV 文件路径，使用 - 表示不输出 (默认 "new_contracts.csv")
+      --provider-uri string           TRON Full Node 的 URI (不带端口) (默认 "http://localhost")
+      --receipts-output string        收据输出的 CSV 文件路径，使用 - 表示不输出 (默认 "receipts.csv")
+      --start-block uint              起始区块高度
+      --start-timestamp uint          起始区块的时间戳 (UTC)
+      --transfers-output string       代币转账输出的 CSV 文件路径，使用 - 表示不输出 (默认 "token_transfers.csv")
+      --workers uint                  并行执行的 worker 数量
 ```
 
 ### export_address_details
