@@ -45,15 +45,15 @@ func NewTronClient(providerURL string) *TronClient {
 		httpURI = providerURL
 		jsonURI = providerURL + "/jsonrpc"
 	} else {
-		// No protocol - add default ports (legacy behavior)
+		// No protocol - add default schema and ports (legacy behavior)
 		// This handles both "localhost" and "localhost:8090" formats
 		if !strings.Contains(providerURL, ":") {
-			httpURI = providerURL + ":8090"
-			jsonURI = providerURL + ":50545/jsonrpc"
+			httpURI = "http://" + providerURL + ":8090"
+			jsonURI = "http://" + providerURL + ":50545/jsonrpc"
 		} else {
 			// Already has port specified without protocol
-			httpURI = providerURL
-			jsonURI = providerURL + "/jsonrpc"
+			httpURI = "http://" + providerURL
+			jsonURI = "http://" + providerURL + "/jsonrpc"
 		}
 	}
 	
