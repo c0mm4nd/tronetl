@@ -545,7 +545,7 @@ func ParseName(contractResults []string) *string {
 
 func ParseDecimals(contractResults []string) *uint64 {
 	if len(contractResults) == 0 {
-		panic("failed to parse symbol")
+		panic("failed to parse decimals")
 	}
 
 	result, ok := new(big.Int).SetString(contractResults[0], 16)
