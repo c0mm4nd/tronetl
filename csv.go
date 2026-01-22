@@ -426,7 +426,7 @@ type CsvTokens struct {
 	Symbol      string `csv:"symbol"`
 	Name        string `csv:"name"`
 	Decimals    uint64 `csv:"decimals"`
-	TotalSupply uint64 `csv:"total_supply"`
+	TotalSupply string `csv:"total_supply"`
 	BlockNumber uint64 `csv:"block_number"`
 }
 
@@ -558,7 +558,7 @@ func ParseDecimals(contractResults []string) *uint64 {
 	return &rtn
 }
 
-func ParseTotalSupply(contractResults []string) *uint64 {
+func ParseTotalSupply(contractResults []string) *string {
 	if len(contractResults) == 0 {
 		panic("failed to parse symbol")
 	}
@@ -569,7 +569,7 @@ func ParseTotalSupply(contractResults []string) *uint64 {
 		return nil
 	}
 
-	rtn := result.Uint64()
+	rtn := result.String()
 	return &rtn
 }
 
