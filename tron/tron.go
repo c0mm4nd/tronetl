@@ -41,19 +41,43 @@ func NewTronClient(providerURL string) *TronClient {
 		httpURI = "http://localhost:8090"
 		jsonURI = "http://localhost:50545/jsonrpc"
 	} else if strings.HasPrefix(providerURL, "https://") || strings.HasPrefix(providerURL, "http://") {
-		// Already has protocol, use as-is for HTTP API
-		httpURI = providerURL
-		jsonURI = providerURL + "/jsonrpc"
+		// Already has protocol - check if port is specified
+		// Remove the protocol prefix to check for port
+		urlWithoutProto := strings.TrimPrefix(strings.TrimPrefix(providerURL, "https://"), "http://")
+		
+		// Check if port is already specified in the URL
+		// A port is specified if there's a colon after the host (but before any path)
+		hasPort := false
+		if colonIdx := strings.Index(urlWithoutProto, ":"); colonIdx != -1 {
+			// Make sure the colon is not part of IPv6 address or path
+			slashIdx := strings.Index(urlWithoutProto, "/")
+			if slashIdx == -1 || colonIdx < slashIdx {
+				hasPort = true
+			}
+		}
+		
+		if hasPort {
+			// Port already specified, use as-is
+			httpURI = providerURL
+			jsonURI = providerURL + "/jsonrpc"
+		} else {
+			// No port specified, add default port 8090
+			httpURI = providerURL + ":8090"
+			jsonURI = providerURL + ":8090/jsonrpc"
+		}
 	} else {
-		// No protocol - add default ports (legacy behavior)
-		// This handles both "localhost" and "localhost:8090" formats
+		// No protocol - need to handle two cases:
+		// 1. hostname or IP without port (e.g., "localhost", "192.168.1.1")
+		// 2. hostname:port or IP:port without protocol (e.g., "localhost:8090", "192.168.1.1:8090")
+		
 		if !strings.Contains(providerURL, ":") {
+			// No port specified, add default ports (legacy behavior for backward compatibility)
 			httpURI = providerURL + ":8090"
 			jsonURI = providerURL + ":50545/jsonrpc"
 		} else {
-			// Already has port specified without protocol
-			httpURI = providerURL
-			jsonURI = providerURL + "/jsonrpc"
+			// Port specified but no protocol - add http:// prefix to avoid URL parsing errors
+			httpURI = "http://" + providerURL
+			jsonURI = "http://" + providerURL + "/jsonrpc"
 		}
 	}
 	
