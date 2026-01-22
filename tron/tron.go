@@ -34,7 +34,7 @@ func chk(err error) {
 func NewTronClient(providerURL string) *TronClient {
 	httpURI := providerURL
 	jsonURI := providerURL
-	
+
 	// Handle empty or invalid URLs
 	if providerURL == "" {
 		// Default to localhost with ports
@@ -44,7 +44,7 @@ func NewTronClient(providerURL string) *TronClient {
 		// Already has protocol - check if port is specified
 		// Remove the protocol prefix to check for port
 		urlWithoutProto := strings.TrimPrefix(strings.TrimPrefix(providerURL, "https://"), "http://")
-		
+
 		// Check if port is already specified in the URL
 		// A port is specified if there's a colon after the host (but before any path)
 		hasPort := false
@@ -55,7 +55,7 @@ func NewTronClient(providerURL string) *TronClient {
 				hasPort = true
 			}
 		}
-		
+
 		if hasPort {
 			// Port already specified, use as-is
 			httpURI = providerURL
@@ -69,7 +69,7 @@ func NewTronClient(providerURL string) *TronClient {
 		// No protocol - need to handle two cases:
 		// 1. hostname or IP without port (e.g., "localhost", "192.168.1.1")
 		// 2. hostname:port or IP:port without protocol (e.g., "localhost:8090", "192.168.1.1:8090")
-		
+
 		if !strings.Contains(providerURL, ":") {
 			// No port specified, add default ports (legacy behavior for backward compatibility)
 			httpURI = providerURL + ":8090"
@@ -80,7 +80,7 @@ func NewTronClient(providerURL string) *TronClient {
 			jsonURI = "http://" + providerURL + "/jsonrpc"
 		}
 	}
-	
+
 	return &TronClient{
 		httpURI: httpURI,
 		jsonURI: jsonURI,
@@ -190,7 +190,7 @@ func (c *TronClient) GetTxInfosByNumber(number uint64) []HTTPTxInfo {
 		if len(body) == 0 {
 			return []HTTPTxInfo{}
 		}
-		
+
 		// It might be an error response or single object - try that
 		var singleInfo HTTPTxInfo
 		err2 := json.Unmarshal(body, &singleInfo)
@@ -205,7 +205,7 @@ func (c *TronClient) GetTxInfosByNumber(number uint64) []HTTPTxInfo {
 		if len(body) > 200 {
 			bodyPreview = string(body[:200])
 		}
-		panic(fmt.Sprintf("failed to unmarshal tx infos for block %d: %v, body preview: %s", 
+		panic(fmt.Sprintf("failed to unmarshal tx infos for block %d: %v, body preview: %s",
 			number, err, bodyPreview))
 	}
 

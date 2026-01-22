@@ -6,11 +6,11 @@ import (
 
 func TestNewTronClientURLHandling(t *testing.T) {
 	tests := []struct {
-		name               string
-		providerURL        string
-		expectedHTTPURI    string
-		expectedJSONURI    string
-		description        string
+		name            string
+		providerURL     string
+		expectedHTTPURI string
+		expectedJSONURI string
+		description     string
 	}{
 		{
 			name:            "empty string defaults to localhost",
@@ -101,12 +101,12 @@ func TestNewTronClientURLHandling(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			client := NewTronClient(tt.providerURL)
-			
+
 			if client.httpURI != tt.expectedHTTPURI {
 				t.Errorf("httpURI mismatch for %s:\n  got:      %q\n  expected: %q\n  %s",
 					tt.name, client.httpURI, tt.expectedHTTPURI, tt.description)
 			}
-			
+
 			if client.jsonURI != tt.expectedJSONURI {
 				t.Errorf("jsonURI mismatch for %s:\n  got:      %q\n  expected: %q\n  %s",
 					tt.name, client.jsonURI, tt.expectedJSONURI, tt.description)
