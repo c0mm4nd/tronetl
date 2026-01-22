@@ -57,7 +57,7 @@ func TestParseTotalSupplyWithTronGrid(t *testing.T) {
 		if supplyBig.Cmp(minExpected) < 0 {
 			t.Fatalf("USDT total supply seems too small: %s (expected at least 10^15)", *totalSupply)
 		}
-		
+
 		t.Logf("✓ Successfully parsed large USDT total supply without overflow")
 	})
 }
