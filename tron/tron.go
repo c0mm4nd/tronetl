@@ -41,16 +41,38 @@ func NewTronClient(providerURL string) *TronClient {
 func NewTronClientWithOverrides(providerURL, httpProviderURI, jsonrpcProviderURI string) *TronClient {
 	httpURI := providerURL
 	jsonURI := providerURL
-	
+
 	// Handle empty or invalid URLs
 	if providerURL == "" {
 		// Default to localhost with ports
 		httpURI = "http://localhost:8090"
 		jsonURI = "http://localhost:50545/jsonrpc"
-	} else if strings.HasPrefix(providerURL, "https://") || strings.HasPrefix(providerURL, "http://") {
+	} else if strings.HasPrefix(providerURL, "https://") {
 		// Already has protocol, use as-is for HTTP API
-		httpURI = providerURL
-		jsonURI = providerURL + "/jsonrpc"
+		// trim the scheme
+		trimmed := strings.TrimPrefix(providerURL, "https://")
+		if strings.Contains(trimmed, ":") {
+			// Has port specified
+			httpURI = providerURL
+			jsonURI = providerURL + "/jsonrpc"
+		} else {
+			// No port specified, add default ports
+			httpURI = providerURL + ":8090"
+			jsonURI = providerURL + ":50545/jsonrpc"
+		}
+	} else if strings.HasPrefix(providerURL, "http://") {
+		// Already has protocol, use as-is for HTTP API
+		// trim the scheme
+		trimmed := strings.TrimPrefix(providerURL, "http://")
+		if strings.Contains(trimmed, ":") {
+			// Has port specified
+			httpURI = providerURL
+			jsonURI = providerURL + "/jsonrpc"
+		} else {
+			// No port specified, add default ports
+			httpURI = providerURL + ":8090"
+			jsonURI = providerURL + ":50545/jsonrpc"
+		}
 	} else {
 		// No protocol - add default schema and ports (legacy behavior)
 		// This handles both "localhost" and "localhost:8090" formats
@@ -63,7 +85,7 @@ func NewTronClientWithOverrides(providerURL, httpProviderURI, jsonrpcProviderURI
 			jsonURI = "http://" + providerURL + "/jsonrpc"
 		}
 	}
-	
+
 	// Apply overrides if provided
 	if httpProviderURI != "" {
 		httpURI = httpProviderURI
@@ -71,7 +93,7 @@ func NewTronClientWithOverrides(providerURL, httpProviderURI, jsonrpcProviderURI
 	if jsonrpcProviderURI != "" {
 		jsonURI = jsonrpcProviderURI
 	}
-	
+
 	return &TronClient{
 		httpURI: httpURI,
 		jsonURI: jsonURI,
@@ -181,7 +203,7 @@ func (c *TronClient) GetTxInfosByNumber(number uint64) []HTTPTxInfo {
 		if len(body) == 0 {
 			return []HTTPTxInfo{}
 		}
-		
+
 		// It might be an error response or single object - try that
 		var singleInfo HTTPTxInfo
 		err2 := json.Unmarshal(body, &singleInfo)
@@ -196,7 +218,7 @@ func (c *TronClient) GetTxInfosByNumber(number uint64) []HTTPTxInfo {
 		if len(body) > 200 {
 			bodyPreview = string(body[:200])
 		}
-		panic(fmt.Sprintf("failed to unmarshal tx infos for block %d: %v, body preview: %s", 
+		panic(fmt.Sprintf("failed to unmarshal tx infos for block %d: %v, body preview: %s",
 			number, err, bodyPreview))
 	}
 
