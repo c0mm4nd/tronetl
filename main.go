@@ -27,6 +27,8 @@ func main() {
 
 	nodeConfigs := pflag.NewFlagSet("node config", pflag.ExitOnError)
 	providerURI := nodeConfigs.String("provider-uri", "http://localhost", "the base uri of the tron fullnode (without port)")
+	httpProviderURI := nodeConfigs.String("http-provider-uri", "", "the http provider uri (overrides provider-uri for HTTP API)")
+	jsonrpcProviderURI := nodeConfigs.String("jsonrpc-provider-uri", "", "the jsonrpc provider uri (overrides provider-uri for JSONRPC API)")
 
 	defaults := pflag.NewFlagSet("defaults for all commands", pflag.ExitOnError)
 	startBlock := defaults.Uint64("start-block", 0, "the starting block number")
@@ -67,7 +69,9 @@ func main() {
 			var err error
 
 			options := &ExportBlocksAndTransactionsOptions{
-				ProviderURI: *providerURI,
+				ProviderURI:        *providerURI,
+				HTTPProviderURI:    *httpProviderURI,
+				JSONRPCProviderURI: *jsonrpcProviderURI,
 
 				StartBlock: *startBlock,
 				EndBlock:   *endBlock,
@@ -108,9 +112,11 @@ func main() {
 			var err error
 
 			options := &ExportTransferOptions{
-				ProviderURI: *providerURI,
-				StartBlock:  *startBlock,
-				EndBlock:    *endBlock,
+				ProviderURI:        *providerURI,
+				HTTPProviderURI:    *httpProviderURI,
+				JSONRPCProviderURI: *jsonrpcProviderURI,
+				StartBlock:         *startBlock,
+				EndBlock:           *endBlock,
 
 				StartTimestamp: *startTimestamp,
 				EndTimestamp:   *endTimestamp,
@@ -158,7 +164,9 @@ func main() {
 			var err error
 
 			options := &ExportAddressDetailsOptions{
-				ProviderURI: *providerURI,
+				ProviderURI:        *providerURI,
+				HTTPProviderURI:    *httpProviderURI,
+				JSONRPCProviderURI: *jsonrpcProviderURI,
 
 				Addresses: *addrs,
 			}
@@ -225,11 +233,13 @@ func main() {
 					txsOutput:   txsOut,
 					trc10Output: trc10Out,
 
-					ProviderURI:    *providerURI,
-					StartBlock:     tryStr2Uint(ctx.Query("start-block")),
-					EndBlock:       tryStr2Uint(ctx.Query("end-block")),
-					StartTimestamp: tryStr2Uint(ctx.Query("start-timestamp")),
-					EndTimestamp:   tryStr2Uint(ctx.Query("end-timestamp")),
+					ProviderURI:        *providerURI,
+					HTTPProviderURI:    *httpProviderURI,
+					JSONRPCProviderURI: *jsonrpcProviderURI,
+					StartBlock:         tryStr2Uint(ctx.Query("start-block")),
+					EndBlock:           tryStr2Uint(ctx.Query("end-block")),
+					StartTimestamp:     tryStr2Uint(ctx.Query("start-timestamp")),
+					EndTimestamp:       tryStr2Uint(ctx.Query("end-timestamp")),
 				}
 				ExportBlocksAndTransactions(options)
 
@@ -253,6 +263,8 @@ func main() {
 					internalTxOutput:   internalTxOut,
 					newContractsOutput: newContractsOut,
 					ProviderURI:        *providerURI,
+					HTTPProviderURI:    *httpProviderURI,
+					JSONRPCProviderURI: *jsonrpcProviderURI,
 					StartBlock:         tryStr2Uint(ctx.Query("start-block")),
 					EndBlock:           tryStr2Uint(ctx.Query("end-block")),
 					StartTimestamp:     tryStr2Uint(ctx.Query("start-timestamp")),

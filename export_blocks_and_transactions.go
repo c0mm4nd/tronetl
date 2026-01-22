@@ -18,9 +18,11 @@ type ExportBlocksAndTransactionsOptions struct {
 	txsOutput   io.Writer
 	trc10Output io.Writer
 
-	ProviderURI string `json:"provider_uri,omitempty"`
-	StartBlock  uint64 `json:"start_block,omitempty"`
-	EndBlock    uint64 `json:"end_block,omitempty"`
+	ProviderURI        string `json:"provider_uri,omitempty"`
+	HTTPProviderURI    string `json:"http_provider_uri,omitempty"`
+	JSONRPCProviderURI string `json:"jsonrpc_provider_uri,omitempty"`
+	StartBlock         uint64 `json:"start_block,omitempty"`
+	EndBlock           uint64 `json:"end_block,omitempty"`
 
 	// extension
 	StartTimestamp uint64 `json:"start_timestamp,omitempty"`
@@ -29,7 +31,7 @@ type ExportBlocksAndTransactionsOptions struct {
 
 // ExportBlocksAndTransactions is the main func for handling export_blocks_and_transactions command
 func ExportBlocksAndTransactions(options *ExportBlocksAndTransactionsOptions) {
-	cli := tron.NewTronClient(options.ProviderURI)
+	cli := tron.NewTronClientWithOverrides(options.ProviderURI, options.HTTPProviderURI, options.JSONRPCProviderURI)
 
 	var blksCsvEncoder, txsCsvEncoder, trc10CsvEncoder *csvutil.Encoder
 	if options.blksOutput != nil {
@@ -97,7 +99,7 @@ func ExportBlocksAndTransactions(options *ExportBlocksAndTransactionsOptions) {
 
 // ExportBlocksAndTransactions is the main func for handling export_blocks_and_transactions command
 func ExportBlocksAndTransactionsWithWorkers(options *ExportBlocksAndTransactionsOptions, workers uint) {
-	cli := tron.NewTronClient(options.ProviderURI)
+	cli := tron.NewTronClientWithOverrides(options.ProviderURI, options.HTTPProviderURI, options.JSONRPCProviderURI)
 
 	var receiverWG sync.WaitGroup
 
