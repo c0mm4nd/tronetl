@@ -32,6 +32,13 @@ func chk(err error) {
 }
 
 func NewTronClient(providerURL string) *TronClient {
+	return NewTronClientWithOverrides(providerURL, "", "")
+}
+
+// NewTronClientWithOverrides creates a new TronClient with optional URI overrides.
+// If httpProviderURI is not empty, it will override the derived HTTP URI.
+// If jsonrpcProviderURI is not empty, it will override the derived JSONRPC URI.
+func NewTronClientWithOverrides(providerURL, httpProviderURI, jsonrpcProviderURI string) *TronClient {
 	httpURI := providerURL
 	jsonURI := providerURL
 	
@@ -55,6 +62,14 @@ func NewTronClient(providerURL string) *TronClient {
 			httpURI = "http://" + providerURL
 			jsonURI = "http://" + providerURL + "/jsonrpc"
 		}
+	}
+	
+	// Apply overrides if provided
+	if httpProviderURI != "" {
+		httpURI = httpProviderURI
+	}
+	if jsonrpcProviderURI != "" {
+		jsonURI = jsonrpcProviderURI
 	}
 	
 	return &TronClient{

@@ -22,7 +22,9 @@ type ExportAddressDetailsOptions struct {
 
 	Addresses []string
 
-	ProviderURI string `json:"provider_uri,omitempty"`
+	ProviderURI        string `json:"provider_uri,omitempty"`
+	HTTPProviderURI    string `json:"http_provider_uri,omitempty"`
+	JSONRPCProviderURI string `json:"jsonrpc_provider_uri,omitempty"`
 }
 
 func ExportAddressDetails(options *ExportAddressDetailsOptions) {
@@ -47,7 +49,7 @@ func ExportAddressDetails(options *ExportAddressDetailsOptions) {
 		tokensEncoder = csvutil.NewEncoder(tokensCsvWriter)
 	}
 
-	cli := tron.NewTronClient(options.ProviderURI)
+	cli := tron.NewTronClientWithOverrides(options.ProviderURI, options.HTTPProviderURI, options.JSONRPCProviderURI)
 	for _, addr := range allAddrs {
 		acc := cli.GetAccount(addr)
 		if acc == nil {
@@ -112,7 +114,7 @@ func ExportAddressDetailsWithWorkers(options *ExportAddressDetailsOptions, worke
 		tokensEncCh = createCSVEncodeCh(&receiverWG, tokensEncoder, tokensCsvWriter, workers)
 	}
 
-	cli := tron.NewTronClient(options.ProviderURI)
+	cli := tron.NewTronClientWithOverrides(options.ProviderURI, options.HTTPProviderURI, options.JSONRPCProviderURI)
 
 	exportWork := func(wg *sync.WaitGroup, workerID uint) {
 		for idx := workerID; idx < uint(len(allAddrs)); idx += workers {

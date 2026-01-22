@@ -22,9 +22,11 @@ type ExportTransferOptions struct {
 
 	Worker int
 
-	ProviderURI string `json:"provider_uri,omitempty"`
-	StartBlock  uint64 `json:"start_block,omitempty"`
-	EndBlock    uint64 `json:"end_block,omitempty"`
+	ProviderURI        string `json:"provider_uri,omitempty"`
+	HTTPProviderURI    string `json:"http_provider_uri,omitempty"`
+	JSONRPCProviderURI string `json:"jsonrpc_provider_uri,omitempty"`
+	StartBlock         uint64 `json:"start_block,omitempty"`
+	EndBlock           uint64 `json:"end_block,omitempty"`
 
 	// extension
 	StartTimestamp uint64 `json:"start_timestamp,omitempty"`
@@ -35,7 +37,7 @@ type ExportTransferOptions struct {
 
 // ExportTransfers is the main func for handling export_transfers command
 func ExportTransfers(options *ExportTransferOptions) {
-	cli := tron.NewTronClient(options.ProviderURI)
+	cli := tron.NewTronClientWithOverrides(options.ProviderURI, options.HTTPProviderURI, options.JSONRPCProviderURI)
 
 	var tfEncoder, logEncoder, internalTxEncoder, receiptEncoder, newContractsEncoder *csvutil.Encoder
 
@@ -200,7 +202,7 @@ func ExportTransfers(options *ExportTransferOptions) {
 
 // ExportTransfers is the main func for handling export_transfers command
 func ExportTransfersWithWorkers(options *ExportTransferOptions, workers uint) {
-	cli := tron.NewTronClient(options.ProviderURI)
+	cli := tron.NewTronClientWithOverrides(options.ProviderURI, options.HTTPProviderURI, options.JSONRPCProviderURI)
 
 	var tfEncCh, logEncCh, internalTxEncCh, receiptEncCh, newContractsEncCh chan any
 	var receiverWG sync.WaitGroup
