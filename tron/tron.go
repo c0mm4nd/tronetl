@@ -43,16 +43,32 @@ func NewTronClient(providerURL string) *TronClient {
 	} else if strings.HasPrefix(providerURL, "https://") || strings.HasPrefix(providerURL, "http://") {
 		// Already has protocol - check if port is specified
 		// Remove the protocol prefix to check for port
-		urlWithoutProto := strings.TrimPrefix(strings.TrimPrefix(providerURL, "https://"), "http://")
+		var urlWithoutProto string
+		if strings.HasPrefix(providerURL, "https://") {
+			urlWithoutProto = strings.TrimPrefix(providerURL, "https://")
+		} else {
+			urlWithoutProto = strings.TrimPrefix(providerURL, "http://")
+		}
 
 		// Check if port is already specified in the URL
 		// A port is specified if there's a colon after the host (but before any path)
+		// Note: IPv6 addresses with brackets (e.g., [::1]:8090) are supported
 		hasPort := false
-		if colonIdx := strings.Index(urlWithoutProto, ":"); colonIdx != -1 {
-			// Make sure the colon is not part of IPv6 address or path
-			slashIdx := strings.Index(urlWithoutProto, "/")
-			if slashIdx == -1 || colonIdx < slashIdx {
-				hasPort = true
+		if strings.HasPrefix(urlWithoutProto, "[") {
+			// IPv6 address with brackets - check for port after closing bracket
+			if closeBracketIdx := strings.Index(urlWithoutProto, "]"); closeBracketIdx != -1 {
+				remainder := urlWithoutProto[closeBracketIdx+1:]
+				if strings.HasPrefix(remainder, ":") {
+					hasPort = true
+				}
+			}
+		} else {
+			// IPv4 or hostname - check for colon before any path
+			if colonIdx := strings.Index(urlWithoutProto, ":"); colonIdx != -1 {
+				slashIdx := strings.Index(urlWithoutProto, "/")
+				if slashIdx == -1 || colonIdx < slashIdx {
+					hasPort = true
+				}
 			}
 		}
 

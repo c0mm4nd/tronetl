@@ -96,6 +96,20 @@ func TestNewTronClientURLHandling(t *testing.T) {
 			expectedJSONURI: "http://tron.example.com:8090/jsonrpc",
 			description:     "http://domain:port should be used as-is",
 		},
+		{
+			name:            "http with IPv6 address without port should add default port",
+			providerURL:     "http://[::1]",
+			expectedHTTPURI: "http://[::1]:8090",
+			expectedJSONURI: "http://[::1]:8090/jsonrpc",
+			description:     "http://[IPv6] without port should add :8090",
+		},
+		{
+			name:            "http with IPv6 address and port should use as-is",
+			providerURL:     "http://[::1]:8090",
+			expectedHTTPURI: "http://[::1]:8090",
+			expectedJSONURI: "http://[::1]:8090/jsonrpc",
+			description:     "http://[IPv6]:port should be used as-is",
+		},
 	}
 
 	for _, tt := range tests {
