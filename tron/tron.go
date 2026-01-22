@@ -41,7 +41,7 @@ func NewTronClient(providerURL string) *TronClient {
 		httpURI = "http://localhost:8090"
 		jsonURI = "http://localhost:50545/jsonrpc"
 	} else if strings.HasPrefix(providerURL, "https://") || strings.HasPrefix(providerURL, "http://") {
-		// Already has protocol - use net/url to properly handle host, port, and path
+		// Already has protocol - properly handle host, port, and path
 		httpURI = addPortToURL(providerURL, "8090")
 		jsonURI = addPortToURL(providerURL, "50545") + "/jsonrpc"
 	} else {
@@ -89,7 +89,7 @@ func NewTronClient(providerURL string) *TronClient {
 // addPortToURL adds a default port to a URL if it doesn't already have one.
 // It properly handles URLs with paths by inserting the port between host and path.
 func addPortToURL(urlStr string, defaultPort string) string {
-	// Check if URL already has a port by looking for the pattern
+	// Check if URL already has a port (colon followed by digits between protocol and path)
 	// We need to check after the protocol and before any path
 
 	var protocol string
