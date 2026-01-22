@@ -77,9 +77,9 @@ func NewTronClient(providerURL string) *TronClient {
 			httpURI = providerURL
 			jsonURI = providerURL + "/jsonrpc"
 		} else {
-			// No port specified, add default port 8090
+			// No port specified, add default ports (8090 for HTTP API, 50545 for JSON-RPC)
 			httpURI = providerURL + ":8090"
-			jsonURI = providerURL + ":8090/jsonrpc"
+			jsonURI = providerURL + ":50545/jsonrpc"
 		}
 	} else {
 		// No protocol - need to handle two cases:
