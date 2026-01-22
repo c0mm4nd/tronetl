@@ -110,6 +110,48 @@ func TestNewTronClientURLHandling(t *testing.T) {
 			expectedJSONURI: "http://[::1]:8090/jsonrpc",
 			description:     "http://[IPv6]:port should be used as-is",
 		},
+		{
+			name:            "http with IP and path but no port should add port before path",
+			providerURL:     "http://192.168.8.14/api/v1",
+			expectedHTTPURI: "http://192.168.8.14:8090/api/v1",
+			expectedJSONURI: "http://192.168.8.14:50545/api/v1/jsonrpc",
+			description:     "http://IP/path without port should insert port before path",
+		},
+		{
+			name:            "http with hostname and path but no port should add port before path",
+			providerURL:     "http://example.com/api/v1",
+			expectedHTTPURI: "http://example.com:8090/api/v1",
+			expectedJSONURI: "http://example.com:50545/api/v1/jsonrpc",
+			description:     "http://hostname/path without port should insert port before path",
+		},
+		{
+			name:            "http with IP, port and path should use as-is",
+			providerURL:     "http://192.168.8.14:8090/api/v1",
+			expectedHTTPURI: "http://192.168.8.14:8090/api/v1",
+			expectedJSONURI: "http://192.168.8.14:8090/api/v1/jsonrpc",
+			description:     "http://IP:port/path should be used as-is",
+		},
+		{
+			name:            "IPv6 without protocol and without port should add http and port",
+			providerURL:     "[::1]",
+			expectedHTTPURI: "http://[::1]:8090",
+			expectedJSONURI: "http://[::1]:50545/jsonrpc",
+			description:     "[IPv6] without protocol should add http:// and ports",
+		},
+		{
+			name:            "IPv6 without protocol but with port should add http",
+			providerURL:     "[::1]:8090",
+			expectedHTTPURI: "http://[::1]:8090",
+			expectedJSONURI: "http://[::1]:8090/jsonrpc",
+			description:     "[IPv6]:port without protocol should add http://",
+		},
+		{
+			name:            "IPv6 full address without protocol and without port",
+			providerURL:     "[2001:db8::1]",
+			expectedHTTPURI: "http://[2001:db8::1]:8090",
+			expectedJSONURI: "http://[2001:db8::1]:50545/jsonrpc",
+			description:     "[IPv6] full address without protocol should add http:// and ports",
+		},
 	}
 
 	for _, tt := range tests {

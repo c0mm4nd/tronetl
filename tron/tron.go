@@ -41,52 +41,35 @@ func NewTronClient(providerURL string) *TronClient {
 		httpURI = "http://localhost:8090"
 		jsonURI = "http://localhost:50545/jsonrpc"
 	} else if strings.HasPrefix(providerURL, "https://") || strings.HasPrefix(providerURL, "http://") {
-		// Already has protocol - check if port is specified
-		// Remove the protocol prefix to check for port
-		var urlWithoutProto string
-		if strings.HasPrefix(providerURL, "https://") {
-			urlWithoutProto = strings.TrimPrefix(providerURL, "https://")
-		} else {
-			urlWithoutProto = strings.TrimPrefix(providerURL, "http://")
-		}
-
-		// Check if port is already specified in the URL
-		// A port is specified if there's a colon after the host (but before any path)
-		// Note: IPv6 addresses with brackets (e.g., [::1]:8090) are supported
-		hasPort := false
-		if strings.HasPrefix(urlWithoutProto, "[") {
-			// IPv6 address with brackets - check for port after closing bracket
-			if closeBracketIdx := strings.Index(urlWithoutProto, "]"); closeBracketIdx != -1 {
-				remainder := urlWithoutProto[closeBracketIdx+1:]
-				if strings.HasPrefix(remainder, ":") {
-					hasPort = true
-				}
-			}
-		} else {
-			// IPv4 or hostname - check for colon before any path
-			if colonIdx := strings.Index(urlWithoutProto, ":"); colonIdx != -1 {
-				slashIdx := strings.Index(urlWithoutProto, "/")
-				if slashIdx == -1 || colonIdx < slashIdx {
-					hasPort = true
-				}
-			}
-		}
-
-		if hasPort {
-			// Port already specified, use as-is
-			httpURI = providerURL
-			jsonURI = providerURL + "/jsonrpc"
-		} else {
-			// No port specified, add default ports (8090 for HTTP API, 50545 for JSON-RPC)
-			httpURI = providerURL + ":8090"
-			jsonURI = providerURL + ":50545/jsonrpc"
-		}
+		// Already has protocol - use net/url to properly handle host, port, and path
+		httpURI = addPortToURL(providerURL, "8090")
+		jsonURI = addPortToURL(providerURL, "50545") + "/jsonrpc"
 	} else {
-		// No protocol - need to handle two cases:
-		// 1. hostname or IP without port (e.g., "localhost", "192.168.1.1")
-		// 2. hostname:port or IP:port without protocol (e.g., "localhost:8090", "192.168.1.1:8090")
+		// No protocol - need to handle different cases:
+		// 1. IPv6 with brackets: [::1] or [::1]:8090
+		// 2. hostname or IP without port: localhost, 192.168.1.1
+		// 3. hostname:port or IP:port: localhost:8090, 192.168.1.1:8090
 
-		if !strings.Contains(providerURL, ":") {
+		if strings.HasPrefix(providerURL, "[") {
+			// IPv6 address with brackets
+			closeBracketIdx := strings.Index(providerURL, "]")
+			if closeBracketIdx != -1 {
+				remainder := providerURL[closeBracketIdx+1:]
+				if remainder == "" || !strings.HasPrefix(remainder, ":") {
+					// No port specified, add default ports
+					httpURI = "http://" + providerURL + ":8090"
+					jsonURI = "http://" + providerURL + ":50545/jsonrpc"
+				} else {
+					// Port already specified, add http:// prefix
+					httpURI = "http://" + providerURL
+					jsonURI = "http://" + providerURL + "/jsonrpc"
+				}
+			} else {
+				// Malformed IPv6, treat as-is with http:// prefix
+				httpURI = "http://" + providerURL
+				jsonURI = "http://" + providerURL + "/jsonrpc"
+			}
+		} else if !strings.Contains(providerURL, ":") {
 			// No port specified, add default ports (legacy behavior for backward compatibility)
 			httpURI = providerURL + ":8090"
 			jsonURI = providerURL + ":50545/jsonrpc"
@@ -101,6 +84,70 @@ func NewTronClient(providerURL string) *TronClient {
 		httpURI: httpURI,
 		jsonURI: jsonURI,
 	}
+}
+
+// addPortToURL adds a default port to a URL if it doesn't already have one.
+// It properly handles URLs with paths by inserting the port between host and path.
+func addPortToURL(urlStr string, defaultPort string) string {
+	// Check if URL already has a port by looking for the pattern
+	// We need to check after the protocol and before any path
+
+	var protocol string
+	var remainder string
+
+	if strings.HasPrefix(urlStr, "https://") {
+		protocol = "https://"
+		remainder = strings.TrimPrefix(urlStr, "https://")
+	} else if strings.HasPrefix(urlStr, "http://") {
+		protocol = "http://"
+		remainder = strings.TrimPrefix(urlStr, "http://")
+	} else {
+		// No protocol, return as-is
+		return urlStr
+	}
+
+	// Check if port is already specified
+	hasPort := false
+	hostEnd := len(remainder) // default to end if no path
+
+	if strings.HasPrefix(remainder, "[") {
+		// IPv6 address with brackets
+		closeBracketIdx := strings.Index(remainder, "]")
+		if closeBracketIdx != -1 {
+			afterBracket := remainder[closeBracketIdx+1:]
+			if strings.HasPrefix(afterBracket, ":") {
+				hasPort = true
+			}
+			// Find where path starts
+			slashIdx := strings.Index(afterBracket, "/")
+			if slashIdx != -1 {
+				hostEnd = closeBracketIdx + 1 + slashIdx
+			}
+		}
+	} else {
+		// IPv4 or hostname
+		colonIdx := strings.Index(remainder, ":")
+		slashIdx := strings.Index(remainder, "/")
+
+		if colonIdx != -1 && (slashIdx == -1 || colonIdx < slashIdx) {
+			hasPort = true
+		}
+
+		if slashIdx != -1 {
+			hostEnd = slashIdx
+		}
+	}
+
+	if hasPort {
+		// Port already specified, return as-is
+		return urlStr
+	}
+
+	// Insert port between host and path
+	host := remainder[:hostEnd]
+	path := remainder[hostEnd:]
+
+	return protocol + host + ":" + defaultPort + path
 }
 
 func (c *TronClient) GetJSONBlockByNumberWithTxs(number *big.Int) *JSONBlockWithTxs {
