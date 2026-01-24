@@ -437,6 +437,7 @@ func NewCsvTokens(cli *tron.TronClient, contract *tron.HTTPContract) *CsvTokens 
 	symbolResult := cli.CallContract(contractAddr, callerAddr, 0, 1000,
 		"symbol()",
 	)
+
 	symbol := ParseSymbol(symbolResult.ConstantResult)
 	if symbol == nil {
 		log.Println("failed to parse symbol for contract", tron.EnsureHexAddr(contractAddr))
@@ -496,6 +497,9 @@ func ParseSymbol(contractResults []string) *string {
 	}
 
 	result := contractResults[0]
+	if len(result) < 64 {
+		return nil
+	}
 	bigLlen, ok := new(big.Int).SetString(result[0:64], 16)
 	if !ok {
 		// TODO: warn log here
@@ -522,6 +526,9 @@ func ParseName(contractResults []string) *string {
 	}
 
 	result := contractResults[0]
+	if len(result) < 64 {
+		return nil
+	}
 	bigLlen, ok := new(big.Int).SetString(result[0:64], 16)
 	if !ok {
 		// TODO: warn log here
