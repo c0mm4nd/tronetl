@@ -70,7 +70,7 @@ func ExportAddressDetails(options *ExportAddressDetailsOptions) {
 				csvContract := NewCsvContract(contract)
 				contractsEncoder.Encode(csvContract)
 
-				if options.tokensOutput != nil && (csvContract.IsErc20 || csvContract.IsErc721) {
+				if options.tokensOutput != nil && contract != nil && contract.ContractAddress != "" && (csvContract.IsErc20 || csvContract.IsErc721 || isLikelyProxyContractName(csvContract.ContractName) || len(contract.Abi.Entrys) == 0) {
 					if tokens := NewCsvTokens(cli, contract); tokens != nil {
 						tokensEncoder.Encode(tokens)
 					} else {
@@ -141,7 +141,7 @@ func ExportAddressDetailsWithWorkers(options *ExportAddressDetailsOptions, worke
 					csvContract := NewCsvContract(contract)
 					contractsEncCh <- csvContract
 
-					if tokensEncCh != nil && (csvContract.IsErc20 || csvContract.IsErc721) {
+					if tokensEncCh != nil && contract != nil && contract.ContractAddress != "" && (csvContract.IsErc20 || csvContract.IsErc721 || isLikelyProxyContractName(csvContract.ContractName) || len(contract.Abi.Entrys) == 0) {
 						if tokens := NewCsvTokens(cli, contract); tokens != nil {
 							tokensEncCh <- tokens
 						} else {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/hex"
 	"encoding/json"
 	"log"
@@ -433,49 +434,40 @@ type CsvTokens struct {
 func NewCsvTokens(cli *tron.TronClient, contract *tron.HTTPContract) *CsvTokens {
 	contractAddr := contract.ContractAddress
 	callerAddr := contract.OriginAddress
+	if isLikelyProxyContractName(contract.Name) {
+		// TransparentUpgradeableProxy blocks admin from fallback, avoid admin as caller
+		callerAddr = contract.ContractAddress
+	}
 
-	symbolResult := cli.CallContract(contractAddr, callerAddr, 0, 1000,
-		"symbol()",
-	)
-
-	symbol := ParseSymbol(symbolResult.ConstantResult)
+	symbolResult := fetchConstantResult(cli, contractAddr, callerAddr, "symbol()")
+	symbol := ParseSymbol(symbolResult)
 	if symbol == nil {
 		log.Println("failed to parse symbol for contract", tron.EnsureHexAddr(contractAddr))
-		result, _ := json.Marshal(symbolResult)
-		log.Println(string(result))
+		logConstantResultDebug(symbolResult)
 		return nil
 	}
 
-	nameResult := cli.CallContract(contractAddr, callerAddr, 0, 1000,
-		"name()",
-	)
-	name := ParseName(nameResult.ConstantResult)
+	nameResult := fetchConstantResult(cli, contractAddr, callerAddr, "name()")
+	name := ParseName(nameResult)
 	if name == nil {
 		log.Println("failed to parse name for contract", tron.EnsureHexAddr(contractAddr))
-		result, _ := json.Marshal(nameResult)
-		log.Println(string(result))
+		logConstantResultDebug(nameResult)
 		return nil
 	}
 
-	decimalsResult := cli.CallContract(contractAddr, callerAddr, 0, 1000,
-		"decimals()",
-	)
-	decimals := ParseDecimals(decimalsResult.ConstantResult)
+	decimalsResult := fetchConstantResult(cli, contractAddr, callerAddr, "decimals()")
+	decimals := ParseDecimals(decimalsResult)
 	if decimals == nil {
 		log.Println("failed to parse decimals for contract", tron.EnsureHexAddr(contractAddr))
-		result, _ := json.Marshal(decimalsResult)
-		log.Println(string(result))
+		logConstantResultDebug(decimalsResult)
 		return nil
 	}
 
-	totalSupplyResult := cli.CallContract(contractAddr, callerAddr, 0, 1000,
-		"totalSupply()",
-	)
-	totalSupply := ParseTotalSupply(totalSupplyResult.ConstantResult)
+	totalSupplyResult := fetchConstantResult(cli, contractAddr, callerAddr, "totalSupply()")
+	totalSupply := ParseTotalSupply(totalSupplyResult)
 	if totalSupply == nil {
 		log.Println("failed to parse totalSupply for contract", tron.EnsureHexAddr(contractAddr))
-		result, _ := json.Marshal(totalSupplyResult)
-		log.Println(string(result))
+		logConstantResultDebug(totalSupplyResult)
 		return nil
 	}
 
@@ -491,68 +483,124 @@ func NewCsvTokens(cli *tron.TronClient, contract *tron.HTTPContract) *CsvTokens 
 	}
 }
 
-func ParseSymbol(contractResults []string) *string {
-	if len(contractResults) == 0 {
-		return nil
+func fetchConstantResult(cli *tron.TronClient, contractAddr, callerAddr, funcSig string) []string {
+	res := cli.CallContract(contractAddr, callerAddr, 0, 10000000, funcSig)
+	if len(res.ConstantResult) > 0 {
+		return res.ConstantResult
 	}
 
-	result := contractResults[0]
-	if len(result) < 64 {
-		return nil
+	data := tron.FunctionSelector(funcSig)
+	if hexResult, err := cli.EthCall(contractAddr, data); err == nil {
+		trimmed := strings.TrimPrefix(hexResult, "0x")
+		if trimmed != "" {
+			return []string{trimmed}
+		}
 	}
-	bigLlen, ok := new(big.Int).SetString(result[0:64], 16)
-	if !ok {
-		// TODO: warn log here
-		return nil
+
+	return nil
+}
+
+func logConstantResultDebug(results []string) {
+	if len(results) == 0 {
+		log.Println("constant_result: <empty>")
+		return
 	}
-	l, ok := new(big.Int).SetString(result[64:64+bigLlen.Int64()*2], 16)
-	if !ok {
-		// TODO: warn log here
-		return nil
+	payload, _ := json.Marshal(results)
+	log.Println(string(payload))
+}
+
+func isLikelyProxyContractName(name string) bool {
+	if name == "" {
+		return false
 	}
-	hexStr := result[64+bigLlen.Int64()*2 : 64+bigLlen.Int64()*2+l.Int64()*2]
-	decoded, err := hex.DecodeString(hexStr)
-	if err != nil {
-		// TODO: err log here
-		return nil
-	}
-	rtn := string(decoded)
-	return &rtn
+	return strings.Contains(strings.ToLower(name), "proxy")
+}
+
+func ParseSymbol(contractResults []string) *string {
+	return parseAbiString(contractResults)
 }
 
 func ParseName(contractResults []string) *string {
+	return parseAbiString(contractResults)
+}
+
+func parseAbiString(contractResults []string) *string {
 	if len(contractResults) == 0 {
 		return nil
 	}
 
-	result := contractResults[0]
+	result := strings.TrimPrefix(contractResults[0], "0x")
 	if len(result) < 64 {
 		return nil
 	}
-	bigLlen, ok := new(big.Int).SetString(result[0:64], 16)
-	if !ok {
-		// TODO: warn log here
-		return nil
-	}
-	l, ok := new(big.Int).SetString(result[64:64+bigLlen.Int64()*2], 16)
-	if !ok {
-		// TODO: warn log here
-		return nil
-	}
-	hexStr := result[64+bigLlen.Int64()*2 : 64+bigLlen.Int64()*2+l.Int64()*2]
-	decoded, err := hex.DecodeString(hexStr)
-	if err != nil {
-		// TODO: err log here
-		return nil
+
+	if s, ok := parseDynamicAbiString(result); ok {
+		return &s
 	}
 
-	rtn := string(decoded)
-	return &rtn
+	if s, ok := parseBytes32String(result); ok {
+		return &s
+	}
+
+	return nil
+}
+
+func parseDynamicAbiString(result string) (string, bool) {
+	offsetBI, ok := new(big.Int).SetString(result[0:64], 16)
+	if !ok {
+		return "", false
+	}
+	offset := int(offsetBI.Int64())
+	if offset < 0 || offset%32 != 0 {
+		return "", false
+	}
+	offsetHex := offset * 2
+	if len(result) < offsetHex+64 {
+		return "", false
+	}
+
+	lenBI, ok := new(big.Int).SetString(result[offsetHex:offsetHex+64], 16)
+	if !ok {
+		return "", false
+	}
+	byteLen := int(lenBI.Int64())
+	if byteLen < 0 {
+		return "", false
+	}
+	dataStart := offsetHex + 64
+	dataEnd := dataStart + byteLen*2
+	if dataEnd > len(result) {
+		return "", false
+	}
+
+	hexStr := result[dataStart:dataEnd]
+	decoded, err := hex.DecodeString(hexStr)
+	if err != nil {
+		return "", false
+	}
+
+	return string(decoded), true
+}
+
+func parseBytes32String(result string) (string, bool) {
+	if len(result) < 64 {
+		return "", false
+	}
+	decoded, err := hex.DecodeString(result[:64])
+	if err != nil {
+		return "", false
+	}
+	decoded = bytes.TrimRight(decoded, "\x00")
+	if len(decoded) == 0 {
+		return "", false
+	}
+
+	return string(decoded), true
 }
 
 func ParseDecimals(contractResults []string) *uint64 {
 	if len(contractResults) == 0 {
-		panic("failed to parse decimals")
+		return nil
 	}
 
 	result, ok := new(big.Int).SetString(contractResults[0], 16)
@@ -567,7 +615,7 @@ func ParseDecimals(contractResults []string) *uint64 {
 
 func ParseTotalSupply(contractResults []string) *string {
 	if len(contractResults) == 0 {
-		panic("failed to parse total supply")
+		return nil
 	}
 
 	result, ok := new(big.Int).SetString(contractResults[0], 16)
