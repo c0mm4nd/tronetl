@@ -89,6 +89,7 @@ type HTTPBlockHeader struct {
 // HTTPTransaction represents the Transaction result from HTTP RESTful API
 type HTTPTransaction struct {
 	Ret []struct {
+		Ret         string `json:"ret,omitempty"`
 		ContractRet string `json:"contractRet,omitempty"`
 	} `json:"ret,omitempty"`
 	Signature []string `json:"signature,omitempty"`

@@ -326,6 +326,10 @@ func (c *TronClient) CallContract(contractAddr, callerAddr string, val, feeLimit
 	err = json.Unmarshal(body, &result)
 	chk(err)
 
+	if !result.Result.Result || result.Transaction.Ret[0].ContractRet != "" || result.Transaction.Ret[0].Ret != "" {
+		chk(err)
+	}
+
 	return &result
 }
 
